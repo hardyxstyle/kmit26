@@ -960,7 +960,12 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const ADMIN_PASS = "kmit2024";
+async function hashPass(pass) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pass));
+  return Array.from(new Uint8Array(buf)).map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+
+const ADMIN_PASS_HASH = "f1519cce75434a1c28581a0a795573e714fe3dd3c13c8124441b97a9cb21a981";
 const CURRENT_YEAR = "2025/2026";
 
 let currentUser = null;
@@ -1082,11 +1087,12 @@ window.doLogin = async () => {
   const err = document.getElementById('login-err');
   err.style.display = 'none';
   if (!username||!password) { err.style.display='block'; return; }
+  const hashedLoginPass = await hashPass(password);
   const snap = await get(ref(db,'children'));
   if (!snap.exists()) { err.style.display='block'; return; }
   let found = null;
   Object.entries(snap.val()).forEach(([k,c]) => {
-    if ((c.username||'').toLowerCase()===username && c.password===password) found={id:k,...c};
+    if ((c.username||'').toLowerCase()===username && c.password===hashedLoginPass) found={id:k,...c};
   });
   if (!found) { err.style.display='block'; return; }
   currentUser = {name:found.name, avatar:found.avatar||'🦁', childId:found.id, class:found.class, isAdmin:false};
@@ -1104,8 +1110,11 @@ window.doLogin = async () => {
 };
 
 // ── ADMIN LOGIN ──
-window.checkAdminPass = () => {
-  if (document.getElementById('admin-pass-input').value===ADMIN_PASS) {
+window.checkAdminPass = async () => {
+  const inputVal = document.getElementById('admin-pass-input').value;
+  const hashBuf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(inputVal));
+  const inputHash = Array.from(new Uint8Array(hashBuf)).map(x=>x.toString(16).padStart(2,'0')).join('');
+  if (inputHash === ADMIN_PASS_HASH) {
     document.getElementById('admin-pass-err').style.display='none';
     currentUser = {isAdmin:true};
     saveSession(currentUser);
@@ -1416,7 +1425,8 @@ window.addChild=async()=>{
   const avatar=document.getElementById('nc-av').value;
   if(!name||!username||!password){alert('Попълни всички полета');return;}
   if(Object.values(allChildrenCache).find(c=>(c.username||'').toLowerCase()===username)){alert('Потр. ime е заето');return;}
-  await push(ref(db,'children'),{name,class:cls,username,password,avatar,points:0});
+  const hashedPass = await hashPass(password);
+  await push(ref(db,'children'),{name,class:cls,username,password:hashedPass,avatar,points:0});
   ['nc-name','nc-username','nc-password'].forEach(id=>document.getElementById(id).value='');
 };
 
@@ -1442,7 +1452,7 @@ window.saveChildEdit=async()=>{
   const avatar=document.getElementById('edit-child-av').value;
   if(!name||!username){alert('Попълни ime и потр. ime');return;}
   const upd={name,class:cls,username,avatar};
-  if(newPass)upd.password=newPass;
+  if(newPass) upd.password = await hashPass(newPass);
   await update(ref(db,`children/${id}`),upd);
   closeModal('edit-child-modal');
 };
@@ -1471,7 +1481,8 @@ window.importCSV=async()=>{
   for(const child of csvParsed){
     const exists=Object.values(allChildrenCache).find(c=>(c.username||'').toLowerCase()===child.username);
     if(exists){skipped++;continue;}
-    await push(ref(db,'children'),child);
+    const childToSave = {...child, password: await hashPass(child.password)};
+    await push(ref(db,'children'),childToSave);
     imported++;
   }
   alert(`Импортирани: ${imported} · Пропуснати (дублирани): ${skipped}`);
