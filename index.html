@@ -239,6 +239,20 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
 .progress-stat-label{font-size:11px;color:var(--text3);margin-top:2px;}
 
 
+
+/* NOTES */
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:1rem;}
+.note-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem;cursor:pointer;transition:all .2s;border:2px solid transparent;position:relative;}
+.note-card:hover{box-shadow:var(--shadow-md);border-color:var(--green);}
+.note-card-title{font-size:14px;font-weight:700;margin-bottom:6px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.note-card-preview{font-size:12px;color:var(--text3);line-height:1.5;max-height:60px;overflow:hidden;}
+.note-card-date{font-size:10px;color:var(--gray-300);margin-top:8px;}
+.note-card-del{position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;font-size:14px;opacity:0;transition:opacity .15s;color:var(--red);}
+.note-card:hover .note-card-del{opacity:1;}
+.note-colors{display:flex;gap:6px;margin-bottom:1rem;}
+.note-color-btn{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .15s;}
+.note-color-btn:hover,.note-color-btn.selected{transform:scale(1.2);border-color:var(--text);}
+
 /* LIBRARY */
 .lib-wrap{padding:0;}
 .lib-subject-tabs{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;}
@@ -548,12 +562,37 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
 
     <!-- notes view -->
     <div id="kid-view-notes" style="display:none">
-      <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.25rem;margin-bottom:1rem">
-        <div style="font-size:14px;font-weight:800;margin-bottom:0.75rem">📝 Моят бележник</div>
-        <textarea id="notes-textarea" style="width:100%;min-height:300px;padding:10px 14px;font-size:14px;font-family:'Nunito Sans',sans-serif;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);color:var(--text);resize:vertical;line-height:1.7" placeholder="Пиши бележките си тук..."></textarea>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
-          <span id="notes-saved-label" style="font-size:12px;color:var(--text3)"></span>
-          <button class="btn-green" onclick="saveNotes()" style="font-size:13px;padding:7px 16px">💾 Запази</button>
+      <div id="notes-list-view">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+          <div style="font-size:14px;font-weight:800;color:var(--text)">📝 Моите бележки</div>
+          <button class="btn-green" onclick="openNewNote()" style="font-size:13px;padding:7px 14px">+ Нова бележка</button>
+        </div>
+        <div class="notes-grid" id="notes-grid"></div>
+        <div id="notes-empty" class="empty" style="display:none">📭 Нямаш бележки все още. Натисни "+ Нова бележка"!</div>
+      </div>
+      <div id="notes-editor-view" style="display:none">
+        <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.25rem;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
+            <button class="lesson-back-btn" onclick="closeNoteEditor()" title="Назад към бележките">←</button>
+            <div style="font-size:14px;font-weight:800">📝 Редактирай бележка</div>
+          </div>
+          <input id="note-edit-title" class="text-input" placeholder="Заглавие..." maxlength="60" style="margin-bottom:8px"/>
+          <div class="note-colors" id="note-color-picker">
+            <div class="note-color-btn selected" data-color="#ffffff" onclick="pickNoteColor(this,'#ffffff')" style="background:#ffffff;border-color:#ccc" title="Бяло"></div>
+            <div class="note-color-btn" data-color="#E1F5EE" onclick="pickNoteColor(this,'#E1F5EE')" style="background:#E1F5EE" title="Зелено"></div>
+            <div class="note-color-btn" data-color="#EFF6FF" onclick="pickNoteColor(this,'#EFF6FF')" style="background:#EFF6FF" title="Синьо"></div>
+            <div class="note-color-btn" data-color="#FFFBEB" onclick="pickNoteColor(this,'#FFFBEB')" style="background:#FFFBEB" title="Жълто"></div>
+            <div class="note-color-btn" data-color="#FEF2F2" onclick="pickNoteColor(this,'#FEF2F2')" style="background:#FEF2F2" title="Червено"></div>
+            <div class="note-color-btn" data-color="#F5F3FF" onclick="pickNoteColor(this,'#F5F3FF')" style="background:#F5F3FF" title="Лилаво"></div>
+          </div>
+          <textarea id="note-edit-text" style="width:100%;min-height:250px;padding:10px 14px;font-size:14px;font-family:'Nunito Sans',sans-serif;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);color:var(--text);resize:vertical;line-height:1.7" placeholder="Пиши тук..."></textarea>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
+            <span id="note-save-label" style="font-size:12px;color:var(--text3)"></span>
+            <div style="display:flex;gap:8px">
+              <button class="btn-red" onclick="deleteCurrentNote()" style="font-size:13px">🗑️ Изтрий</button>
+              <button class="btn-green" onclick="saveCurrentNote()" style="font-size:13px">💾 Запази</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -902,6 +941,25 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
   </div>
 </div>
 
+<!-- COPY TASK MODAL -->
+<div class="modal-overlay" id="copy-modal">
+  <div class="modal">
+    <h3>📋 Копирай задача</h3>
+    <input type="hidden" id="copy-task-id"/>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:1rem;background:var(--gray-100);padding:8px 12px;border-radius:var(--radius-sm)" id="copy-task-title"></div>
+    <div class="field-label">За кой клас да е копието?</div>
+    <select class="form-select" id="copy-task-class" onchange="updateCopyStudentSelect()" style="width:100%;margin-bottom:12px"></select>
+    <div class="field-label">За конкретен ученик? (по избор)</div>
+    <select class="form-select" id="copy-task-student" style="width:100%;margin-bottom:4px">
+      <option value="all">👥 Всички ученици</option>
+    </select>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('copy-modal')">Отказ</button>
+      <button class="btn-green" onclick="confirmCopyTask()">📋 Копирай</button>
+    </div>
+  </div>
+</div>
+
 <!-- EDIT TASK MODAL -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal">
@@ -991,7 +1049,7 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, get, push, update, remove, onValue, off }
+import { getDatabase, ref, set, get, push, update, remove, onValue, off }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
@@ -1311,6 +1369,7 @@ function listenAdminData(){
     populateChildSelects();
     populateClassFilters();
     if(typeof updateMsgTargets === "function") updateMsgTargets();
+    if(currentAdmin?.isSuperAdmin) renderAdminsList();
   });
 }
 
@@ -2070,20 +2129,48 @@ function listenAdmins() {
 function renderAdminsList() {
   const list = document.getElementById('admins-list');
   if (!list) return;
-  const entries = Object.entries(allAdminsCache);
-  if (!entries.length) { list.innerHTML = '<div class="empty">Няма добавени администратори</div>'; return; }
-  const subjectLabels = { all:'👑 Всичко', kmit:'КМИТ', it:'ИТ', info:'Информатика' };
-  list.innerHTML = '<div style="overflow-x:auto"><table class="children-table"><thead><tr><th>Ime</th><th>Потр. ime</th><th>Права</th><th></th></tr></thead><tbody>' +
-    entries.map(([k,a]) => `<tr>
-      <td>${a.name}</td>
+  const subjectLabels = { all:'Всичко', kmit:'КМИТ', it:'ИТ', info:'Информатика' };
+
+  // separate admins
+  const separateAdmins = Object.entries(allAdminsCache);
+
+  // student admins
+  const studentAdmins = Object.entries(allChildrenCache).filter(([k,c])=>c.isAdmin);
+
+  if (!separateAdmins.length && !studentAdmins.length) {
+    list.innerHTML = '<div class="empty">Няма добавени администратори</div>';
+    return;
+  }
+
+  let html = '<div style="overflow-x:auto"><table class="children-table"><thead><tr><th>Ime</th><th>Потр. ime</th><th>Права</th><th>Тип</th><th></th></tr></thead><tbody>';
+
+  // student admins first
+  studentAdmins.forEach(([k,c]) => {
+    html += `<tr>
+      <td><span style="font-size:16px;margin-right:5px">${c.avatar||'🧒'}</span>${c.name}</td>
+      <td><span class="uname-badge">${c.username||'—'}</span></td>
+      <td><span class="tag tag-year">${subjectLabels[c.adminSubject||'all']}</span></td>
+      <td><span style="font-size:11px;color:var(--text3)">👨‍🎓 Ученик</span></td>
+      <td><button class="btn-edit" onclick="openEditChild('${k}')" title="Редактирай правата">✏️</button></td>
+    </tr>`;
+  });
+
+  // separate admins
+  separateAdmins.forEach(([k,a]) => {
+    html += `<tr>
+      <td>👤 ${a.name}</td>
       <td><span class="uname-badge">${a.username||'—'}</span></td>
-      <td><span class="tag tag-year">${subjectLabels[a.subject]||a.subject}</span></td>
+      <td><span class="tag tag-year">${subjectLabels[a.subject||'all']}</span></td>
+      <td><span style="font-size:11px;color:var(--text3)">🔐 Администратор</span></td>
       <td><div style="display:flex;gap:5px">
         <button class="btn-edit" onclick="resetAdminPass('${k}','${a.name}')" title="Смени парола">🔑</button>
         <button class="btn-red" onclick="deleteAdmin('${k}')" title="Изтрий">🗑️</button>
       </div></td>
-    </tr>`).join('') +
-    '</tbody></table></div>';
+    </tr>`;
+  });
+
+  html += '</tbody></table></div>';
+  list.innerHTML = html;
 }
 
 // ── STUDENT → ADMIN SWITCH ──
@@ -2116,16 +2203,58 @@ window.copyTask = async (id) => {
   const snap = await get(ref(db,`tasks/${id}`));
   if (!snap.exists()) return;
   const t = snap.val();
-  // remove responses and files, reset done
+
+  // build class options based on subject
+  const classes = {
+    kmit:['all','5А','5Б','5В','6А','6Б','6В','7А','7Б','7В'],
+    it:['all','8А','8Б','8В','8Г','8Д','8Е','9А','9Б','9В','9Г','9Д','9Е','10А','10Б','10В','10Г','10Д','10Е','11Д','12Д'],
+    info:['all','11А','11Б','11В','11Г','11Д','12А','12Б','12В','12Г','12Д']
+  };
+  const subjectClasses = classes[t.subject] || ['all'];
+
+  // show copy modal
+  document.getElementById('copy-task-title').textContent = t.title;
+  const sel = document.getElementById('copy-task-class');
+  sel.innerHTML = subjectClasses.map(c=>`<option value="${c}">${c==='all'?'Всички класове':c}</option>`).join('');
+  sel.value = t.classFilter || 'all';
+  document.getElementById('copy-task-student').innerHTML = '<option value="all">👥 Всички ученици</option>';
+  document.getElementById('copy-task-id').value = id;
+  document.getElementById('copy-modal').classList.add('open');
+};
+
+window.confirmCopyTask = async () => {
+  const id = document.getElementById('copy-task-id').value;
+  const snap = await get(ref(db,`tasks/${id}`));
+  if (!snap.exists()) return;
+  const t = snap.val();
   const copy = {...t};
   delete copy.responses;
   delete copy.childFiles;
   copy.done = false;
   copy.archived = false;
   copy.createdAt = Date.now();
+  copy.classFilter = document.getElementById('copy-task-class').value;
+  copy.studentFilter = document.getElementById('copy-task-student').value;
   copy.title = '📋 ' + copy.title;
   await push(ref(db,'tasks'), copy);
-  alert('✓ Задачата е копирана! Намери я в списъка и редактирай.');
+  closeModal('copy-modal');
+  alert('✓ Копирано! Намери задачата в списъка и редактирай ако трябва.');
+};
+
+window.updateCopyStudentSelect = () => {
+  const cls = document.getElementById('copy-task-class').value;
+  const sel = document.getElementById('copy-task-student');
+  sel.innerHTML = '<option value="all">👥 Всички ученици</option>';
+  if (cls === 'all') return;
+  Object.entries(allChildrenCache)
+    .filter(([k,c]) => c.class === cls)
+    .sort((a,b) => (a[1].name||'').localeCompare(b[1].name))
+    .forEach(([k,c]) => {
+      const opt = document.createElement('option');
+      opt.value = k;
+      opt.textContent = (c.avatar||'') + ' ' + c.name;
+      sel.appendChild(opt);
+    });
 };
 
 // ── EXPORT ──
@@ -2601,30 +2730,105 @@ window.submitLessonQuiz = async (lessonId) => {
   document.querySelector(`[onclick="submitLessonQuiz('${lessonId}')"]`)?.replaceWith(resultEl);
 };
 
-// ── NOTEPAD ──
+// ── NOTES ──
+let allNotesCache = {};
+let currentNoteId = null;
+let currentNoteColor = '#ffffff';
+
 function loadNotes() {
-  const key = `kmit_notes_${currentUser?.childId}`;
-  try {
-    const saved = localStorage.getItem(key) || '';
-    const ta = document.getElementById('notes-textarea');
-    if (ta) ta.value = saved;
-  } catch(e){}
+  const cid = currentUser?.childId;
+  if (!cid) return;
+  onValue(ref(db,`notes/${cid}`), snap => {
+    allNotesCache = snap.exists() ? snap.val() : {};
+    renderNotesGrid();
+  });
 }
 
-window.saveNotes = () => {
-  const key = `kmit_notes_${currentUser?.childId}`;
-  try {
-    localStorage.setItem(key, document.getElementById('notes-textarea')?.value || '');
-    const lbl = document.getElementById('notes-saved-label');
-    if (lbl) { lbl.textContent = '✓ Запазено ' + new Date().toLocaleTimeString('bg-BG', {hour:'2-digit',minute:'2-digit'}); }
-  } catch(e){}
+function renderNotesGrid() {
+  const grid = document.getElementById('notes-grid');
+  const empty = document.getElementById('notes-empty');
+  if (!grid) return;
+  const entries = Object.entries(allNotesCache).sort((a,b)=>(b[1].updatedAt||0)-(a[1].updatedAt||0));
+  if (!entries.length) {
+    grid.innerHTML = '';
+    if(empty) empty.style.display='block';
+    return;
+  }
+  if(empty) empty.style.display='none';
+  grid.innerHTML = entries.map(([k,n]) => `
+    <div class="note-card" onclick="openNoteEditor('${k}')" style="background:${n.color||'#fff'}">
+      <button class="note-card-del" onclick="event.stopPropagation();deleteNote('${k}')" title="Изтрий бележката">✕</button>
+      <div class="note-card-title">${n.title||'Без заглавие'}</div>
+      <div class="note-card-preview">${(n.text||'').slice(0,100)}</div>
+      <div class="note-card-date">${n.updatedAt ? new Date(n.updatedAt).toLocaleDateString('bg-BG') : ''}</div>
+    </div>`).join('');
+}
+
+window.openNewNote = async () => {
+  const cid = currentUser?.childId;
+  const newRef = push(ref(db,`notes/${cid}`));
+  await set(newRef, { title:'', text:'', color:'#ffffff', updatedAt: Date.now() });
+  openNoteEditor(newRef.key);
 };
 
-// auto-save notes on typing
+window.openNoteEditor = (id) => {
+  currentNoteId = id;
+  const n = allNotesCache[id] || {};
+  document.getElementById('note-edit-title').value = n.title||'';
+  document.getElementById('note-edit-text').value = n.text||'';
+  currentNoteColor = n.color||'#ffffff';
+  // update color picker
+  document.querySelectorAll('.note-color-btn').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.color === currentNoteColor);
+  });
+  document.getElementById('note-save-label').textContent = '';
+  document.getElementById('notes-list-view').style.display='none';
+  document.getElementById('notes-editor-view').style.display='block';
+};
+
+window.closeNoteEditor = () => {
+  document.getElementById('notes-editor-view').style.display='none';
+  document.getElementById('notes-list-view').style.display='block';
+};
+
+window.pickNoteColor = (el, color) => {
+  currentNoteColor = color;
+  document.querySelectorAll('.note-color-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('notes-editor-view').querySelector('.note-card, div')?.style.setProperty('background', color);
+};
+
+window.saveCurrentNote = async () => {
+  const cid = currentUser?.childId;
+  if (!cid || !currentNoteId) return;
+  const title = document.getElementById('note-edit-title').value.trim();
+  const text = document.getElementById('note-edit-text').value;
+  const lbl = document.getElementById('note-save-label');
+  if (lbl) lbl.textContent = 'Запазване...';
+  await update(ref(db,`notes/${cid}/${currentNoteId}`), { title, text, color:currentNoteColor, updatedAt:Date.now() });
+  if (lbl) lbl.textContent = '✓ Запазено в ' + new Date().toLocaleTimeString('bg-BG',{hour:'2-digit',minute:'2-digit'});
+};
+
+window.deleteCurrentNote = async () => {
+  if (!confirm('Изтрий тази бележка?')) return;
+  const cid = currentUser?.childId;
+  await remove(ref(db,`notes/${cid}/${currentNoteId}`));
+  closeNoteEditor();
+};
+
+window.deleteNote = async (id) => {
+  if (!confirm('Изтрий бележката?')) return;
+  const cid = currentUser?.childId;
+  await remove(ref(db,`notes/${cid}/${id}`));
+};
+
+// auto-save on typing
 document.addEventListener('input', e => {
-  if (e.target.id === 'notes-textarea') {
+  if (e.target.id==='note-edit-text' || e.target.id==='note-edit-title') {
+    const lbl = document.getElementById('note-save-label');
+    if(lbl) lbl.textContent = 'Непазено...';
     clearTimeout(window._notesSaveTimer);
-    window._notesSaveTimer = setTimeout(() => saveNotes(), 1500);
+    window._notesSaveTimer = setTimeout(() => saveCurrentNote(), 1500);
   }
 });
 
