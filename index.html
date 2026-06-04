@@ -453,11 +453,13 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
   <div class="admin-login-card" style="margin:auto">
     <div style="font-size:40px;margin-bottom:0.75rem">🔐</div>
     <div style="font-size:22px;font-weight:900;margin-bottom:4px">Панел за учители</div>
-    <div style="font-size:14px;color:var(--text3);margin-bottom:1.5rem">Въведи паролата за достъп</div>
+    <div style="font-size:14px;color:var(--text3);margin-bottom:1.5rem">Влез с твоя акаунт</div>
     <span class="back-link" onclick="showScreen('screen-home')" title="Обратно към началната страница">← Назад</span>
+    <div class="field-label">Потребителско ime</div>
+    <input class="text-input" id="admin-username-input" placeholder="Потребителско ime..." autocapitalize="none" onkeydown="if(event.key==='Enter')document.getElementById('admin-pass-input').focus()"/>
     <div class="field-label">Парола</div>
     <input class="text-input" id="admin-pass-input" type="password" placeholder="Парола..." onkeydown="if(event.key==='Enter')checkAdminPass()"/>
-    <div class="login-err" id="admin-pass-err">Грешна парола</div>
+    <div class="login-err" id="admin-pass-err">Грешно потребителско ime или парола</div>
     <button class="btn-primary" onclick="checkAdminPass()">Влез в панела</button>
   </div>
 </div>
@@ -474,6 +476,7 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <div class="h-logo">KMIT<span>★</span></div>
+      <button id="kid-admin-switch-btn" class="btn-sm" onclick="switchToAdminPanel()" style="display:none;background:var(--amber-light);color:#92400E;border-color:var(--amber)" title="Превключи към учителския панел">👑 Панел</button>
       <button class="btn-sm" onclick="logout()" title="Излез от профила">Излез</button>
     </div>
   </div>
@@ -579,8 +582,14 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
 <!-- ADMIN PANEL -->
 <div id="screen-admin" class="screen">
   <div class="admin-header">
-    <div class="admin-title">🏫 KMIT — Панел</div>
-    <button class="btn-sm" onclick="logout()" title="Излез от профила">Излез</button>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="admin-title">🏫 KMIT — Панел</div>
+      <span id="admin-role-badge" style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--amber-light);color:#92400E;display:none"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span id="admin-name-display" style="font-size:13px;color:var(--text3)"></span>
+      <button class="btn-sm" onclick="logout()" title="Излез от профила">Излез</button>
+    </div>
   </div>
   <div class="main">
     <div class="admin-tabs">
@@ -590,6 +599,7 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
       <button class="tab" onclick="switchTab('tab-messages-admin',this)" title="Изпрати съобщение до клас или ученик">Съобщения</button>
       <button class="tab" onclick="switchTab('tab-library-admin',this)" title="Управлявай учебната библиотека">📚 Уроци</button>
       <button class="tab" onclick="switchTab('tab-children',this)" title="Управлявай профилите на учениците">Ученици</button>
+      <button class="tab" id="tab-btn-admins" onclick="switchTab('tab-admins',this)" title="Управлявай администраторите" style="display:none">👑 Админи</button>
     </div>
 
     <!-- TASKS TAB -->
@@ -803,6 +813,30 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
       <div id="admin-messages-list"></div>
     </div>
 
+    <!-- ADMINS TAB -->
+    <div id="tab-admins" class="tab-content">
+      <div class="card-form">
+        <h3>Добави администратор</h3>
+        <div class="form-row">
+          <input class="form-input" id="na-name" placeholder="Пълно ime..." maxlength="40"/>
+          <input class="form-input" id="na-username" placeholder="Потр. ime..." maxlength="30" autocapitalize="none"/>
+        </div>
+        <div class="form-row">
+          <input class="form-input" id="na-password" placeholder="Парола..." maxlength="50"/>
+          <select class="form-select" id="na-subject">
+            <option value="all">👑 Всичко</option>
+            <option value="kmit">КМИТ</option>
+            <option value="it">ИТ</option>
+            <option value="info">Информатика</option>
+          </select>
+          <button class="btn-green" onclick="addAdmin()">+ Добави</button>
+        </div>
+        <div class="hint">Правата определят кои задачи/ученици вижда администраторът</div>
+      </div>
+      <div class="sec-head">Администратори</div>
+      <div id="admins-list"></div>
+    </div>
+
     <!-- CHILDREN TAB -->
     <div id="tab-children" class="tab-content">
       <div class="card-form">
@@ -936,6 +970,18 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
     <input class="form-input" id="edit-child-username" placeholder="Потр. ime..." style="width:100%;margin-bottom:8px" autocapitalize="none"/>
     <input class="form-input" id="edit-child-password" placeholder="Нова парола (остави празно = без промяна)..." style="width:100%;margin-bottom:4px"/>
     <div class="hint" style="margin-bottom:8px">Остави паролата празна ако не искаш да я промениш</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:8px 12px;background:var(--amber-light);border-radius:var(--radius-sm)">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;cursor:pointer">
+        <input type="checkbox" id="edit-child-is-admin" style="accent-color:var(--amber);width:16px;height:16px"/>
+        👑 Дай администраторски права
+      </label>
+      <select class="form-select" id="edit-child-admin-subject" style="max-width:150px">
+        <option value="all">Всичко</option>
+        <option value="kmit">КМИТ</option>
+        <option value="it">ИТ</option>
+        <option value="info">Информатика</option>
+      </select>
+    </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal('edit-child-modal')" title="Затвори без промени">Отказ</button>
       <button class="btn-green" onclick="saveChildEdit()">Запази</button>
@@ -1064,6 +1110,13 @@ window.addEventListener('load', () => {
   if (!s) return;
   if (s.isAdmin) {
     currentUser = s;
+    currentAdmin = s;
+    const nameEl = document.getElementById('admin-name-display');
+    const badgeEl = document.getElementById('admin-role-badge');
+    if (nameEl) nameEl.textContent = s.name||'';
+    if (badgeEl) { badgeEl.style.display = s.isSuperAdmin?'inline-block':'none'; badgeEl.textContent='👑 Супер Админ'; }
+    const adminsTabBtn = document.getElementById('tab-btn-admins');
+    if (adminsTabBtn) adminsTabBtn.style.display = s.isSuperAdmin?'inline-block':'none';
     showScreen('screen-admin');
     listenAdminData();
     initQuestionBuilder();
@@ -1072,6 +1125,8 @@ window.addEventListener('load', () => {
     document.getElementById('h-av').textContent = s.avatar||'🦁';
     document.getElementById('h-name').textContent = s.name;
     document.getElementById('h-sub').textContent = greeting();
+    const switchBtn = document.getElementById('kid-admin-switch-btn');
+    if(switchBtn) switchBtn.style.display = s.isStudentAdmin ? 'inline-block' : 'none';
     showScreen('screen-app');
     listenKidTasks();
     listenLeaderboard();
@@ -1095,13 +1150,16 @@ window.doLogin = async () => {
     if ((c.username||'').toLowerCase()===username && c.password===hashedLoginPass) found={id:k,...c};
   });
   if (!found) { err.style.display='block'; return; }
-  currentUser = {name:found.name, avatar:found.avatar||'🦁', childId:found.id, class:found.class, isAdmin:false};
+  currentUser = {name:found.name, avatar:found.avatar||'🦁', childId:found.id, class:found.class, isAdmin:false, isStudentAdmin:!!found.isAdmin, adminSubject:found.adminSubject||'all'};
   saveSession(currentUser);
   document.getElementById('h-av').textContent = currentUser.avatar;
   document.getElementById('h-name').textContent = currentUser.name;
   document.getElementById('h-sub').textContent = greeting();
   document.getElementById('login-username').value='';
   document.getElementById('login-password').value='';
+  // show admin switch button if student has admin rights
+  const switchBtn = document.getElementById('kid-admin-switch-btn');
+  if(switchBtn) switchBtn.style.display = currentUser.isStudentAdmin ? 'inline-block' : 'none';
   showScreen('screen-app');
   listenKidTasks();
   listenLeaderboard();
@@ -1110,22 +1168,7 @@ window.doLogin = async () => {
 };
 
 // ── ADMIN LOGIN ──
-window.checkAdminPass = async () => {
-  const inputVal = document.getElementById('admin-pass-input').value;
-  const hashBuf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(inputVal));
-  const inputHash = Array.from(new Uint8Array(hashBuf)).map(x=>x.toString(16).padStart(2,'0')).join('');
-  if (inputHash === ADMIN_PASS_HASH) {
-    document.getElementById('admin-pass-err').style.display='none';
-    currentUser = {isAdmin:true};
-    saveSession(currentUser);
-    document.getElementById('admin-pass-input').value='';
-    showScreen('screen-admin');
-    listenAdminData();
-    initQuestionBuilder();
-  } else {
-    document.getElementById('admin-pass-err').style.display='block';
-  }
-};
+// checkAdminPass moved to admin auth section above
 
 window.logout = () => {
   try{ off(ref(db,'tasks')); off(ref(db,'children')); }catch(e){}
@@ -1255,6 +1298,7 @@ window.deleteTask = id=>{if(confirm('Изтрий задачата?'))remove(ref
 function listenAdminData(){
   listenAdminMessages();
   listenAdminLessons();
+  if(currentAdmin?.isSuperAdmin) listenAdmins();
   onValue(ref(db,'tasks'),snap=>{
     allTasksCache=snap.exists()?snap.val():{};
     renderAdminTasks();
@@ -1291,6 +1335,12 @@ function populateClassFilters(){
 }
 
 // ── ADMIN TASKS ──
+function adminCanSeeSubject(subj) {
+  if (!currentAdmin) return true;
+  if (currentAdmin.subject === 'all') return true;
+  return currentAdmin.subject === subj;
+}
+
 function renderAdminTasks(){
   const list=document.getElementById('admin-tasks-list');
   const fs=document.getElementById('filter-subject-tasks')?.value||'all';
@@ -1298,6 +1348,7 @@ function renderAdminTasks(){
   const fa=document.getElementById('filter-archive-tasks')?.value||'active';
   let entries=Object.entries(allTasksCache).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
   if(fs!=='all')entries=entries.filter(([k,t])=>t.subject===fs);
+  entries=entries.filter(([k,t])=>adminCanSeeSubject(t.subject));
   if(fy!=='all')entries=entries.filter(([k,t])=>t.year===fy);
   if(fa==='active')entries=entries.filter(([k,t])=>!t.archived);
   else if(fa==='archived')entries=entries.filter(([k,t])=>!!t.archived);
@@ -1369,29 +1420,69 @@ function renderResults(){
   if(!list)return;
   const fs=document.getElementById('filter-subject-res')?.value||'all';
   const fc=document.getElementById('filter-child-res')?.value||'all';
+  const fy=document.getElementById('filter-year-res')?.value||'all';
   const cards=[];
+
+  // get relevant children
+  const relevantChildren = Object.entries(allChildrenCache).filter(([cid])=>fc==='all'||cid===fc);
+
   Object.entries(allTasksCache).forEach(([tid,task])=>{
     if(fs!=='all'&&task.subject!==fs)return;
-    if(!task.responses&&!task.childFiles)return;
-    const childData={};
-    if(task.responses)Object.entries(task.responses).forEach(([cid,resp])=>{if(fc!=='all'&&cid!==fc)return;if(!childData[cid])childData[cid]={};childData[cid].testResp=resp;});
-    if(task.childFiles)Object.entries(task.childFiles).forEach(([cid,files])=>{if(fc!=='all'&&cid!==fc)return;if(!childData[cid])childData[cid]={};childData[cid].files=files;});
-    Object.entries(childData).forEach(([cid,data])=>{
-      const c=allChildrenCache[cid];
-      const cname=c?`${c.avatar||''} ${c.name} (${c.class||''})`:cid;
-      let html=`<div class="result-card"><div class="result-title">${typeTag(task.type)}${subjectTag(task.subject)} <strong>${task.title}</strong> — ${cname}</div>`;
-      if(data.testResp&&task.questions){
+    if(fy!=='all'&&task.year!==fy)return;
+    if(!adminCanSeeSubject(task.subject))return;
+
+    relevantChildren.forEach(([cid,child])=>{
+      // check if this task is relevant for this child
+      if(!taskMatchesStudent(task,{...child,childId:cid,id:cid}))return;
+
+      const isDone = (task.type==='test'||task.type==='question') ? !!(task.responses?.[cid]) : !!task.done;
+      const hasFiles = !!(task.childFiles?.[cid]);
+      const hasResponse = !!(task.responses?.[cid]);
+
+      // show if done OR has files OR has response
+      if(!isDone && !hasFiles && !hasResponse) return;
+
+      const cname=`${child.avatar||''} ${child.name} (${child.class||''})`;
+      let html=`<div class="result-card">
+        <div class="result-title">${typeTag(task.type)}${subjectTag(task.subject)} <strong>${task.title}</strong> — ${cname}</div>`;
+
+      // test/question responses
+      if(hasResponse && task.questions){
+        const resp=task.responses[cid];
         let correct=0;
-        task.questions.forEach((q,i)=>{const ans=data.testResp[`q${i}`];if(q.type==='mc'){const ok=ans===q.correct;if(ok)correct++;html+=`<div class="result-answer">${q.text}<br/><strong>${ans||'—'}</strong> ${q.correct?(ok?'✅':`❌ ${q.correct}`):''}`;
-        }else{html+=`<div class="result-answer">${q.text}<br/><strong>${ans||'—'}</strong>`;}html+='</div>';});
+        task.questions.forEach((q,i)=>{
+          const ans=resp[`q${i}`];
+          if(q.type==='mc'){
+            const ok=ans===q.correct;if(ok)correct++;
+            html+=`<div class="result-answer">${q.text}<br/><strong>Отговор: ${ans||'—'}</strong> ${q.correct?(ok?'✅':`❌ правилен: ${q.correct}`):''}`;
+          }else{
+            html+=`<div class="result-answer">${q.text}<br/><strong>${ans||'—'}</strong>`;
+          }
+          html+='</div>';
+        });
         const mcQs=task.questions.filter(q=>q.type==='mc'&&q.correct);
         if(mcQs.length)html+=`<div class="result-score">Резултат: ${correct}/${mcQs.length}</div>`;
+      } else if(hasResponse && task.type==='question'){
+        const ans=task.responses[cid]?.q0||'—';
+        html+=`<div class="result-answer"><strong>Отговор:</strong> ${ans}</div>`;
+      } else if(isDone){
+        html+=`<div class="result-answer" style="color:var(--green-dark)">✓ Изпълнена</div>`;
       }
-      if(data.files){html+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">';Object.values(data.files).forEach(f=>{html+=f.isImg?`<img class="ev-thumb" src="${f.data}"/>`:`<div class="ev-file">📄<span>${f.name?.split('.').pop()?.toUpperCase()}</span></div>`;});html+='</div>';}
+
+      // uploaded files
+      if(hasFiles){
+        html+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">';
+        Object.values(task.childFiles[cid]).forEach(f=>{
+          html+=f.isImg?`<img class="ev-thumb" src="${f.data}"/>`:`<div class="ev-file">📄<span>${f.name?.split('.').pop()?.toUpperCase()}</span></div>`;
+        });
+        html+='</div>';
+      }
+
       html+='</div>';
       cards.push(html);
     });
   });
+
   list.innerHTML=cards.length?cards.join(''):'<div class="empty">Няма резултати</div>';
 }
 window.renderResults=renderResults;
@@ -1409,7 +1500,7 @@ function renderChildrenTable(){
   if(!entries.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:2rem">Няма ученици</td></tr>';return;}
   tbody.innerHTML=entries.map(([k,c])=>`<tr>
     <td><span style="font-size:16px;margin-right:5px">${c.avatar||'🧒'}</span>${c.name}</td>
-    <td><span class="class-badge">${c.class||'—'}${isProfil(c.class||'')?'<span class="profil-dot" title="Профил"></span>':''}</span></td>
+    <td><span class="class-badge">${c.class||'—'}${isProfil(c.class||'')?'<span class="profil-dot" title="Профил"></span>':''}</span>${c.isAdmin?'<span style="font-size:11px;margin-left:4px" title="Администратор">👑</span>':''}</td>
     <td><span class="uname-badge">${c.username||'—'}</span></td>
     <td><strong style="color:var(--amber)">${c.points||0}⭐</strong></td>
     <td><div style="display:flex;gap:5px"><button class="btn-edit" onclick="openEditChild('${k}')" title="Редактирай ученика">✏️</button><button class="btn-red" onclick="deleteChild('${k}')" title="Изтрий ученика">🗑️</button></div></td>
@@ -1440,6 +1531,8 @@ window.openEditChild=id=>{
   document.getElementById('edit-child-av').value=c.avatar||'🦁';
   document.getElementById('edit-child-username').value=c.username||'';
   document.getElementById('edit-child-password').value='';
+  document.getElementById('edit-child-is-admin').checked=!!c.isAdmin;
+  document.getElementById('edit-child-admin-subject').value=c.adminSubject||'all';
   document.getElementById('edit-child-modal').classList.add('open');
 };
 
@@ -1453,6 +1546,8 @@ window.saveChildEdit=async()=>{
   if(!name||!username){alert('Попълни ime и потр. ime');return;}
   const upd={name,class:cls,username,avatar};
   if(newPass) upd.password = await hashPass(newPass);
+  upd.isAdmin = document.getElementById('edit-child-is-admin').checked;
+  upd.adminSubject = document.getElementById('edit-child-admin-subject').value;
   await update(ref(db,`children/${id}`),upd);
   closeModal('edit-child-modal');
 };
@@ -1870,6 +1965,147 @@ function renderBadges(earned) {
 }
 
 
+
+
+// ── ADMIN AUTH ──
+const SUPERADMIN_USER = "admin";
+const SUPERADMIN_HASH = "f1519cce75434a1c28581a0a795573e714fe3dd3c13c8124441b97a9cb21a981";
+let currentAdmin = null; // { name, username, subject, isSuperAdmin }
+let allAdminsCache = {};
+
+window.checkAdminPass = async () => {
+  const username = document.getElementById('admin-username-input').value.trim().toLowerCase();
+  const pass = document.getElementById('admin-pass-input').value;
+  const err = document.getElementById('admin-pass-err');
+  err.style.display = 'none';
+  if (!username || !pass) { err.style.display='block'; return; }
+
+  const inputHash = await hashPass(pass);
+
+  // check superadmin
+  if (username === SUPERADMIN_USER && inputHash === SUPERADMIN_HASH) {
+    currentAdmin = { name:'Супер Админ', username:SUPERADMIN_USER, subject:'all', isSuperAdmin:true };
+    enterAdminPanel();
+    return;
+  }
+
+  // check other admins in Firebase
+  const snap = await get(ref(db,'admins'));
+  if (snap.exists()) {
+    let found = null;
+    Object.entries(snap.val()).forEach(([k,a]) => {
+      if ((a.username||'').toLowerCase()===username && a.password===inputHash) found={id:k,...a};
+    });
+    if (found) {
+      currentAdmin = { name:found.name, username:found.username, subject:found.subject||'all', isSuperAdmin:false, id:found.id };
+      enterAdminPanel();
+      return;
+    }
+  }
+
+  err.style.display = 'block';
+};
+
+function enterAdminPanel() {
+  document.getElementById('admin-pass-err').style.display='none';
+  document.getElementById('admin-username-input').value='';
+  document.getElementById('admin-pass-input').value='';
+
+  // show name and role
+  const nameEl = document.getElementById('admin-name-display');
+  const badgeEl = document.getElementById('admin-role-badge');
+  if (nameEl) nameEl.textContent = currentAdmin.name;
+  if (badgeEl) {
+    badgeEl.style.display = currentAdmin.isSuperAdmin ? 'inline-block' : 'none';
+    badgeEl.textContent = '👑 Супер Админ';
+  }
+
+  // show admins tab only for superadmin
+  const adminsTabBtn = document.getElementById('tab-btn-admins');
+  if (adminsTabBtn) adminsTabBtn.style.display = currentAdmin.isSuperAdmin ? 'inline-block' : 'none';
+
+  saveSession({isAdmin:true, ...currentAdmin});
+  showScreen('screen-admin');
+  listenAdminData();
+  initQuestionBuilder();
+}
+
+// ── MANAGE ADMINS ──
+window.addAdmin = async () => {
+  if (!currentAdmin?.isSuperAdmin) { alert('Нямаш права за това'); return; }
+  const name = document.getElementById('na-name').value.trim();
+  const username = document.getElementById('na-username').value.trim().toLowerCase().replace(/\s/g,'');
+  const password = document.getElementById('na-password').value.trim();
+  const subject = document.getElementById('na-subject').value;
+  if (!name||!username||!password) { alert('Попълни всички полета'); return; }
+  const snap = await get(ref(db,'admins'));
+  if (snap.exists() && Object.values(snap.val()).find(a=>(a.username||'').toLowerCase()===username)) {
+    alert('Потр. ime вече е заето'); return;
+  }
+  await push(ref(db,'admins'), { name, username, password: await hashPass(password), subject });
+  ['na-name','na-username','na-password'].forEach(id=>document.getElementById(id).value='');
+  alert('✓ Администраторът е добавен!');
+};
+
+window.deleteAdmin = async (id) => {
+  if (!currentAdmin?.isSuperAdmin) return;
+  if (confirm('Изтрий администратора?')) remove(ref(db,`admins/${id}`));
+};
+
+window.resetAdminPass = async (id, name) => {
+  if (!currentAdmin?.isSuperAdmin) return;
+  const newPass = prompt(`Нова парола за ${name}:`);
+  if (!newPass) return;
+  await update(ref(db,`admins/${id}`), { password: await hashPass(newPass) });
+  alert('✓ Паролата е сменена!');
+};
+
+function listenAdmins() {
+  onValue(ref(db,'admins'), snap => {
+    allAdminsCache = snap.exists() ? snap.val() : {};
+    renderAdminsList();
+  });
+}
+
+function renderAdminsList() {
+  const list = document.getElementById('admins-list');
+  if (!list) return;
+  const entries = Object.entries(allAdminsCache);
+  if (!entries.length) { list.innerHTML = '<div class="empty">Няма добавени администратори</div>'; return; }
+  const subjectLabels = { all:'👑 Всичко', kmit:'КМИТ', it:'ИТ', info:'Информатика' };
+  list.innerHTML = '<div style="overflow-x:auto"><table class="children-table"><thead><tr><th>Ime</th><th>Потр. ime</th><th>Права</th><th></th></tr></thead><tbody>' +
+    entries.map(([k,a]) => `<tr>
+      <td>${a.name}</td>
+      <td><span class="uname-badge">${a.username||'—'}</span></td>
+      <td><span class="tag tag-year">${subjectLabels[a.subject]||a.subject}</span></td>
+      <td><div style="display:flex;gap:5px">
+        <button class="btn-edit" onclick="resetAdminPass('${k}','${a.name}')" title="Смени парола">🔑</button>
+        <button class="btn-red" onclick="deleteAdmin('${k}')" title="Изтрий">🗑️</button>
+      </div></td>
+    </tr>`).join('') +
+    '</tbody></table></div>';
+}
+
+// ── STUDENT → ADMIN SWITCH ──
+window.switchToAdminPanel = () => {
+  if (!currentUser?.isStudentAdmin) return;
+  currentAdmin = {
+    name: currentUser.name,
+    username: currentUser.name,
+    subject: currentUser.adminSubject || 'all',
+    isSuperAdmin: false,
+    fromStudent: true
+  };
+  const nameEl = document.getElementById('admin-name-display');
+  const badgeEl = document.getElementById('admin-role-badge');
+  if (nameEl) nameEl.textContent = currentAdmin.name;
+  if (badgeEl) { badgeEl.style.display='none'; }
+  const adminsTabBtn = document.getElementById('tab-btn-admins');
+  if (adminsTabBtn) adminsTabBtn.style.display = 'none';
+  showScreen('screen-admin');
+  listenAdminData();
+  initQuestionBuilder();
+};
 
 // ── ARCHIVE & COPY ──
 window.archiveTask = async (id, isArchived) => {
