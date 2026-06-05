@@ -240,6 +240,24 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
 
 
 
+
+/* GRADES */
+.grade-badge{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;font-size:16px;font-weight:900;font-family:"Nunito",sans-serif;}
+.grade-6{background:#D1FAE5;color:#065F46;}
+.grade-5{background:#DBEAFE;color:#1E40AF;}
+.grade-4{background:#FEF3C7;color:#92400E;}
+.grade-3{background:#FFE4E6;color:#9F1239;}
+.grade-2{background:#F3F4F6;color:#374151;}
+.grades-list{display:flex;flex-direction:column;gap:8px;}
+.grade-card{background:var(--white);border-radius:var(--radius);padding:0.9rem 1rem;box-shadow:var(--shadow);display:flex;align-items:flex-start;gap:12px;}
+.grade-card-info{flex:1;min-width:0;}
+.grade-card-title{font-size:14px;font-weight:700;margin-bottom:3px;}
+.grade-card-meta{font-size:11px;color:var(--text3);margin-bottom:4px;}
+.grade-card-comment{font-size:13px;color:var(--text2);background:var(--gray-100);border-radius:var(--radius-xs);padding:6px 10px;margin-top:4px;line-height:1.5;}
+.grade-avg{background:var(--white);border-radius:var(--radius);padding:1rem 1.25rem;box-shadow:var(--shadow);display:flex;align-items:center;gap:1rem;margin-bottom:1rem;}
+.grade-avg-num{font-size:32px;font-weight:900;font-family:"Nunito",sans-serif;}
+.grade-avg-label{font-size:12px;color:var(--text3);}
+
 /* NOTES */
 .notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:1rem;}
 .note-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem;cursor:pointer;transition:all .2s;border:2px solid transparent;position:relative;}
@@ -518,6 +536,7 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
       <button class="stab" id="kid-tab-progress" onclick="switchKidTab('progress')" style="flex:1;text-align:center">📊 Прогрес</button>
       <button class="stab" id="kid-tab-notes" onclick="switchKidTab('notes')" style="flex:1;text-align:center">📝 Бележник</button>
       <button class="stab" id="kid-tab-library" onclick="switchKidTab('library')" style="flex:1;text-align:center">📚 Библиотека</button>
+      <button class="stab" id="kid-tab-grades" onclick="switchKidTab('grades')" style="flex:1;text-align:center">📋 Оценки</button>
     </div>
 
     <!-- tasks view -->
@@ -606,6 +625,21 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
       <div id="lib-reader-view" style="display:none"></div>
     </div>
 
+    <!-- grades view -->
+    <div id="kid-view-grades" style="display:none">
+      <div class="grade-avg" id="grade-avg-banner">
+        <div>
+          <div class="grade-avg-num" id="grade-avg-num">—</div>
+          <div class="grade-avg-label">Среден успех</div>
+        </div>
+        <div style="flex:1;padding-left:1rem;border-left:1px solid var(--gray-200)">
+          <div style="font-size:13px;color:var(--text2)" id="grade-count-label">Няма оценки все още</div>
+        </div>
+      </div>
+      <div class="grades-list" id="grades-list-kid"></div>
+      <div class="empty" id="grades-empty" style="display:none">📭 Нямаш оценки все още</div>
+    </div>
+
     <!-- leaderboard -->
     <div class="sec-head" style="margin-top:2rem">🏆 Класация</div>
     <div class="leaderboard" id="leaderboard"></div>
@@ -647,11 +681,12 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
         <h3>Добави ново съдържание</h3>
         <div class="form-row">
           <input class="form-input" id="nt-title" placeholder="Заглавие..." maxlength="120" style="flex:3"/>
-          <select class="form-select" id="nt-subject" onchange="updateClassSelect()">
-            <option value="kmit">КМИТ</option>
-            <option value="it">ИТ</option>
-            <option value="info">Информатика</option>
-          </select>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 12px;background:var(--gray-100);border-radius:var(--radius-sm);border:1.5px solid var(--gray-200)">
+            <span style="font-size:12px;font-weight:700;color:var(--text2)">Предмет:</span>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" id="nt-subj-kmit" value="kmit" style="accent-color:var(--green)" onchange="updateClassSelect()"/> КМИТ</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" id="nt-subj-it" value="it" style="accent-color:var(--green)" onchange="updateClassSelect()"/> ИТ</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" id="nt-subj-info" value="info" style="accent-color:var(--green)" onchange="updateClassSelect()"/> Информатика</label>
+          </div>
         </div>
         <div class="form-row">
           <select class="form-select" id="nt-class" onchange="updateStudentSelect()">
@@ -700,12 +735,19 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
         </div>
         <div id="tf-test" class="type-fields">
           <div class="test-builder">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;flex-wrap:wrap;gap:6px">
               <div class="test-builder-label" style="margin:0">Въпроси в теста</div>
-              <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer">
-                <input type="checkbox" id="nt-random" style="accent-color:var(--green)"/>
-                🎲 Случаен ред
-              </label>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer">
+                  <input type="checkbox" id="nt-random" style="accent-color:var(--green)"/>
+                  🎲 Случаен ред
+                </label>
+                <label class="btn-add-q" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px" title="Импортирай въпроси от JSON файл">
+                  📂 Импорт JSON
+                  <input type="file" id="json-import-file" accept=".json" style="display:none" onchange="importTestJSON(this)"/>
+                </label>
+                <button class="btn-add-q" onclick="exportTestJSON()" title="Запази теста като JSON файл">📥 Експорт JSON</button>
+              </div>
             </div>
             <div id="questions-builder"></div>
             <button class="btn-add-q" onclick="addQuestion()" title="Добави нов въпрос към теста">+ Добави въпрос</button>
@@ -979,12 +1021,19 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
     </div>
     <div id="edit-test-wrap" style="display:none">
       <div class="test-builder" style="margin-bottom:8px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;flex-wrap:wrap;gap:6px">
           <div class="test-builder-label" style="margin:0">Въпроси в теста</div>
-          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer">
-            <input type="checkbox" id="edit-random" style="accent-color:var(--green)"/>
-            🎲 Случаен ред
-          </label>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer">
+              <input type="checkbox" id="edit-random" style="accent-color:var(--green)"/>
+              🎲 Случаен ред
+            </label>
+            <label class="btn-add-q" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px" title="Импортирай от JSON">
+              📂 Импорт JSON
+              <input type="file" id="json-import-file-edit" accept=".json" style="display:none" onchange="importTestJSONEdit(this)"/>
+            </label>
+            <button class="btn-add-q" onclick="exportEditTestJSON()" title="Запази като JSON">📥 Експорт JSON</button>
+          </div>
         </div>
         <div id="edit-questions-builder"></div>
         <button class="btn-add-q" onclick="addEditQuestion()" title="Добави нов въпрос към теста">+ Добави въпрос</button>
@@ -1124,7 +1173,8 @@ function typeColor(t) {
 function taskMatchesStudent(task, child) {
   const grade = parseInt(child.class);
   const subjects = getSubjectsForClass(child.class);
-  if (!subjects.includes(task.subject)) return false;
+  const taskSubjects = task.subjects || [task.subject];
+  if (!taskSubjects.some(s => subjects.includes(s))) return false;
   // class filter
   if (task.classFilter && task.classFilter !== 'all' && task.classFilter !== child.class) return false;
   // profil filter
@@ -1190,6 +1240,7 @@ window.addEventListener('load', () => {
     listenLeaderboard();
     listenKidMessages();
     listenKidLessons();
+    listenKidGrades();
   }
 });
 
@@ -1223,6 +1274,7 @@ window.doLogin = async () => {
   listenLeaderboard();
   listenKidMessages();
   listenKidLessons();
+  listenKidGrades();
 };
 
 // ── ADMIN LOGIN ──
@@ -1236,15 +1288,26 @@ window.logout = () => {
 };
 
 // ── CLASS SELECT for add task ──
+function getSelectedSubjects() {
+  const subjects = [];
+  ['kmit','it','info'].forEach(s => {
+    if (document.getElementById(`nt-subj-${s}`)?.checked) subjects.push(s);
+  });
+  return subjects;
+}
+
 window.updateClassSelect = () => {
-  const subj = document.getElementById('nt-subject').value;
+  const subjects = getSelectedSubjects();
   const sel = document.getElementById('nt-class');
-  const classes = {
-    kmit:['all','5А','5Б','5В','6А','6Б','6В','7А','7Б','7В'],
-    it:['all','8А','8Б','8В','8Г','8Д','8Е','9А','9Б','9В','9Г','9Д','9Е','10А','10Б','10В','10Г','10Д','10Е','11Д','12Д'],
-    info:['all','11А','11Б','11В','11Г','11Д','12А','12Б','12В','12Г','12Д']
+  const allClasses = {
+    kmit:['5А','5Б','5В','6А','6Б','6В','7А','7Б','7В'],
+    it:['8А','8Б','8В','8Г','8Д','8Е','9А','9Б','9В','9Г','9Д','9Е','10А','10Б','10В','10Г','10Д','10Е','11Д','12Д'],
+    info:['11А','11Б','11В','11Г','11Д','12А','12Б','12В','12Г','12Д']
   };
-  sel.innerHTML = (classes[subj]||['all']).map(c=>`<option value="${c}">${c==='all'?'Всички класове':c}</option>`).join('');
+  // combine classes from all selected subjects
+  const combined = ['all'];
+  subjects.forEach(s => { (allClasses[s]||[]).forEach(c => { if(!combined.includes(c)) combined.push(c); }); });
+  sel.innerHTML = combined.map(c=>`<option value="${c}">${c==='all'?'Всички класове':c}</option>`).join('');
   if(typeof updateStudentSelect === 'function') updateStudentSelect();
 };
 
@@ -1325,7 +1388,9 @@ window.addTask = async () => {
   const title=document.getElementById('nt-title').value.trim();
   if(!title){alert('Въведи заглавие');return;}
   const type=document.getElementById('nt-type').value;
-  const task={title,type,subject:document.getElementById('nt-subject').value,
+  const selectedSubjects = getSelectedSubjects();
+  if(!selectedSubjects.length){alert('Избери поне един предмет');return;}
+  const task={title,type,subject:selectedSubjects[0],subjects:selectedSubjects,
     classFilter:document.getElementById('nt-class').value,
     profilFilter:document.getElementById('nt-profil').value,
     year:document.getElementById('nt-year').value||CURRENT_YEAR,
@@ -1357,6 +1422,7 @@ function listenAdminData(){
   listenAdminMessages();
   listenAdminLessons();
   if(currentAdmin?.isSuperAdmin) listenAdmins();
+  listenGrades();
   onValue(ref(db,'tasks'),snap=>{
     allTasksCache=snap.exists()?snap.val():{};
     renderAdminTasks();
@@ -1406,8 +1472,8 @@ function renderAdminTasks(){
   const fy=document.getElementById('filter-year-tasks')?.value||'all';
   const fa=document.getElementById('filter-archive-tasks')?.value||'active';
   let entries=Object.entries(allTasksCache).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
-  if(fs!=='all')entries=entries.filter(([k,t])=>t.subject===fs);
-  entries=entries.filter(([k,t])=>adminCanSeeSubject(t.subject));
+  if(fs!=='all')entries=entries.filter(([k,t])=>(t.subjects||[t.subject]).includes(fs));
+  entries=entries.filter(([k,t])=>(t.subjects||[t.subject]).some(s=>adminCanSeeSubject(s)));
   if(fy!=='all')entries=entries.filter(([k,t])=>t.year===fy);
   if(fa==='active')entries=entries.filter(([k,t])=>!t.archived);
   else if(fa==='archived')entries=entries.filter(([k,t])=>!!t.archived);
@@ -1420,11 +1486,12 @@ function renderAdminTasks(){
       <div class="atc-bar" style="background:${typeColor(t.type)}"></div>
       <div class="atc-info">
         <div class="atc-title">${t.title}</div>
-        <div class="atc-meta">${typeTag(t.type)}${subjectTag(t.subject)}${catTag(t.category)}<span class="tag tag-year">${t.year||''}</span><span style="color:var(--text3)">${cls}${prof?' · '+prof:''}${stuName?' · 👤 '+stuName:''}</span>${t.points?`<span class="pts-tag">+${t.points}⭐</span>`:''}${t.deadline?`<span class="deadline-tag">📅 ${t.deadline}</span>`:''}${isOverdue(t)&&!t.done?'<span class="overdue-tag">⚠️ Просрочена</span>':''}${t.archived?'<span class="tag" style="background:#F3F4F6;color:#6B7280">📦 Архивирана</span>':''}</div>
+        <div class="atc-meta">${typeTag(t.type)}${(t.subjects||[t.subject]).map(s=>subjectTag(s)).join('')}${catTag(t.category)}<span class="tag tag-year">${t.year||''}</span><span style="color:var(--text3)">${cls}${prof?' · '+prof:''}${stuName?' · 👤 '+stuName:''}</span>${t.points?`<span class="pts-tag">+${t.points}⭐</span>`:''}${t.deadline?`<span class="deadline-tag">📅 ${t.deadline}</span>`:''}${isOverdue(t)&&!t.done?'<span class="overdue-tag">⚠️ Просрочена</span>':''}${t.archived?'<span class="tag" style="background:#F3F4F6;color:#6B7280">📦 Архивирана</span>':''}</div>
       </div>
       <div class="atc-actions">
         <button class="btn-edit" onclick="openEdit('${k}')" title="Редактирай задачата">✏️</button>
         ${t.type==='test'?`<button class="btn-sm" onclick="printTest('${k}')" title="Разпечатай теста като PDF" style="font-size:12px;padding:6px 10px">🖨️</button>`:''}
+        ${t.type==='test'?`<button class="btn-sm" onclick="exportTaskJSON('${k}')" title="Изтегли теста като JSON файл" style="font-size:12px;padding:6px 10px">📥 JSON</button>`:''}
         <button class="btn-orange" onclick="copyTask('${k}')" title="Копирай задачата за друг клас">📋</button>
         <button class="btn-sm" onclick="archiveTask('${k}',${!!t.archived})" title="${t.archived?'Възстанови':'Архивирай'}">${t.archived?'📤':'📦'}</button>
         <button class="btn-red" onclick="deleteTask('${k}')" title="Изтрий задачата">🗑️</button>
@@ -1537,6 +1604,18 @@ function renderResults(){
         html+='</div>';
       }
 
+      // grade section
+      const existingGrade = allGradesCache?.[cid]?.[tid];
+      html += `<div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;color:var(--text2)">Оценка:</span>
+        ${[2,3,4,5,6].map(g=>`<button onclick="setGrade('${cid}','${tid}',${g})" class="grade-badge grade-${g}" style="cursor:pointer;border:2px solid ${existingGrade?.grade===g?'#111827':'transparent'};transition:all .15s" title="Оценка ${g}">${g}</button>`).join('')}
+        ${existingGrade ? `<span style="font-size:12px;color:var(--green-dark);font-weight:700">✓ Оценка ${existingGrade.grade}</span>` : ''}
+        ${task.type==='test'&&task.responses?.[cid]?`<button onclick="autoGradeTest('${cid}','${tid}')" class="btn-sm" style="font-size:11px;padding:4px 8px" title="Автоматична оценка от теста">🤖 Авто</button>`:''}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:6px;align-items:center">
+        <input class="form-input" id="grade-comment-${cid}-${tid}" placeholder="Коментар (по избор)..." value="${existingGrade?.comment||''}" style="flex:1;font-size:12px"/>
+        <button class="btn-green" onclick="saveGradeComment('${cid}','${tid}')" style="font-size:12px;padding:6px 12px;white-space:nowrap">💾 Запази</button>
+      </div>`;
       html+='</div>';
       cards.push(html);
     });
@@ -2730,6 +2809,228 @@ window.submitLessonQuiz = async (lessonId) => {
   document.querySelector(`[onclick="submitLessonQuiz('${lessonId}')"]`)?.replaceWith(resultEl);
 };
 
+
+
+// ── JSON IMPORT/EXPORT ──
+
+function parseTestJSON(jsonText) {
+  try {
+    const data = JSON.parse(jsonText);
+    // support multiple formats
+    const questions = data.questions || data.items || data;
+    if (!Array.isArray(questions)) throw new Error('Невалиден формат');
+    return { title: data.title || '', questions };
+  } catch(e) {
+    alert('Грешка при четене на JSON файл: ' + e.message);
+    return null;
+  }
+}
+
+function loadQuestionsToBuilder(questions, builderFn, qContainerId) {
+  document.getElementById(qContainerId).innerHTML = '';
+  questions.forEach(q => {
+    builderFn({
+      text: q.text || q.question || '',
+      type: q.type || (q.options ? 'mc' : 'free'),
+      options: q.options || (q.answers ? Object.fromEntries(Object.entries(q.answers)) : null),
+      correct: q.correct || q.answer || null
+    });
+  });
+}
+
+// Import for new test form
+window.importTestJSON = (input) => {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const data = parseTestJSON(e.target.result);
+    if (!data) return;
+    if (data.title && !document.getElementById('nt-title').value) {
+      document.getElementById('nt-title').value = data.title;
+    }
+    // reset builder
+    questionCount = 0;
+    document.getElementById('questions-builder').innerHTML = '';
+    loadQuestionsToBuilder(data.questions, (q) => {
+      questionCount++;
+      const qn = questionCount;
+      const div = document.createElement('div');
+      div.className = 'q-row'; div.id = `qrow-${qn}`;
+      const ismc = q.type === 'mc' || q.options;
+      div.innerHTML = `<div class="q-row-top">
+        <span class="q-num">${qn}.</span>
+        <textarea class="form-textarea" id="q-text-${qn}" style="flex:1;min-height:44px">${q.text}</textarea>
+        <select class="form-select" id="q-type-${qn}" onchange="toggleQType(${qn})" style="max-width:120px">
+          <option value="mc"${ismc?' selected':''}>A/B/C/D</option>
+          <option value="free"${!ismc?' selected':''}>Свободен</option>
+        </select>
+        <button class="btn-rm-q" onclick="removeQuestion(${qn})">✕</button>
+      </div>
+      <div id="q-mc-${qn}" class="opts-grid" style="display:${ismc?'grid':'none'}">
+        ${['A','B','C','D'].map(l=>`<div class="opt-input-wrap">
+          <span class="opt-letter">${l}</span>
+          <input class="form-input" id="q-opt-${qn}-${l}" value="${q.options?.[l]||''}" placeholder="${l}..." style="flex:1"/>
+          <input type="radio" name="q-correct-${qn}" value="${l}" class="correct-radio" ${q.correct===l?'checked':''} title="Правилен"/>
+        </div>`).join('')}
+      </div>`;
+      document.getElementById('questions-builder').appendChild(div);
+    }, 'questions-builder');
+    alert(`✓ Импортирани ${data.questions.length} въпроса!`);
+    input.value = '';
+  };
+  reader.readAsText(file, 'UTF-8');
+};
+
+// Import for edit modal
+window.importTestJSONEdit = (input) => {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const data = parseTestJSON(e.target.result);
+    if (!data) return;
+    editQuestionCount = 0;
+    document.getElementById('edit-questions-builder').innerHTML = '';
+    data.questions.forEach(q => addEditQuestion(q));
+    alert(`✓ Импортирани ${data.questions.length} въпроса!`);
+    input.value = '';
+  };
+  reader.readAsText(file, 'UTF-8');
+};
+
+// Export current test builder (new form)
+window.exportTestJSON = () => {
+  const qs = collectQuestions();
+  if (!qs.length) { alert('Няма въпроси за експорт'); return; }
+  const title = document.getElementById('nt-title')?.value.trim() || 'тест';
+  const data = { title, questions: qs };
+  downloadJSONFile(title + '.json', data);
+};
+
+// Export edit modal test
+window.exportEditTestJSON = () => {
+  const qs = collectEditQuestions();
+  if (!qs.length) { alert('Няма въпроси за експорт'); return; }
+  const title = document.getElementById('edit-title')?.value.trim() || 'тест';
+  const data = { title, questions: qs };
+  downloadJSONFile(title + '.json', data);
+};
+
+// Export existing task as JSON (from admin task list)
+window.exportTaskJSON = async (id) => {
+  const snap = await get(ref(db,`tasks/${id}`));
+  if (!snap.exists()) return;
+  const t = snap.val();
+  if (!t.questions) { alert('Тази задача няма въпроси'); return; }
+  downloadJSONFile((t.title||'тест') + '.json', { title: t.title, questions: t.questions });
+};
+
+function downloadJSONFile(filename, data) {
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── GRADES ──
+let allGradesCache = {};
+
+function listenGrades() {
+  onValue(ref(db,'grades'), snap => {
+    allGradesCache = snap.exists() ? snap.val() : {};
+    // re-render results if open
+    if(document.getElementById('results-list')) renderResults();
+  });
+}
+
+function listenKidGrades() {
+  const cid = currentUser?.childId;
+  if (!cid) return;
+  onValue(ref(db,`grades/${cid}`), snap => {
+    const myGrades = snap.exists() ? snap.val() : {};
+    renderKidGrades(myGrades);
+  });
+}
+
+function renderKidGrades(grades) {
+  const list = document.getElementById('grades-list-kid');
+  const empty = document.getElementById('grades-empty');
+  const avgNum = document.getElementById('grade-avg-num');
+  const countLbl = document.getElementById('grade-count-label');
+  if (!list) return;
+
+  const entries = Object.entries(grades).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
+  if (!entries.length) {
+    list.innerHTML=''; 
+    if(empty) empty.style.display='block';
+    if(avgNum) avgNum.textContent='—';
+    if(countLbl) countLbl.textContent='Няма оценки все още';
+    return;
+  }
+  if(empty) empty.style.display='none';
+
+  // calc average
+  const gradeNums = entries.map(([k,g])=>g.grade).filter(Boolean);
+  const avg = gradeNums.length ? (gradeNums.reduce((a,b)=>a+b,0)/gradeNums.length).toFixed(2) : '—';
+  if(avgNum) avgNum.textContent = avg;
+  if(avgNum) avgNum.className = `grade-avg-num grade-${Math.round(parseFloat(avg)||0}`;
+  if(countLbl) countLbl.textContent = `${gradeNums.length} оценк${gradeNums.length===1?'а':'и'}`;
+
+  list.innerHTML = entries.map(([k,g]) => {
+    const task = allTasksCache[g.taskId];
+    return `<div class="grade-card">
+      <div class="grade-badge grade-${g.grade}">${g.grade}</div>
+      <div class="grade-card-info">
+        <div class="grade-card-title">${task?.title||g.taskTitle||'Задача'}</div>
+        <div class="grade-card-meta">${task?subjectTag(task.subject):''} ${g.createdAt?new Date(g.createdAt).toLocaleDateString('bg-BG'):''}</div>
+        ${g.comment?`<div class="grade-card-comment">💬 ${g.comment}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.setGrade = async (childId, taskId, grade) => {
+  const task = allTasksCache[taskId];
+  const existing = allGradesCache?.[childId]?.[taskId] || {};
+  await update(ref(db,`grades/${childId}/${taskId}`), {
+    grade,
+    taskId,
+    taskTitle: task?.title||'',
+    comment: existing.comment||'',
+    createdAt: existing.createdAt||Date.now(),
+    updatedAt: Date.now()
+  });
+};
+
+window.saveGradeComment = async (childId, taskId) => {
+  const comment = document.getElementById(`grade-comment-${childId}-${taskId}`)?.value.trim()||'';
+  const existing = allGradesCache?.[childId]?.[taskId];
+  if (!existing) { alert('Първо постави оценка!'); return; }
+  await update(ref(db,`grades/${childId}/${taskId}`), { comment, updatedAt: Date.now() });
+  alert('✓ Коментарът е запазен!');
+};
+
+// auto-grade from test results
+window.autoGradeTest = async (childId, taskId) => {
+  const task = allTasksCache[taskId];
+  if (!task?.questions || !task?.responses?.[childId]) return;
+  const resp = task.responses[childId];
+  const mcQs = task.questions.filter(q=>q.type==='mc'&&q.correct);
+  if (!mcQs.length) return;
+  const correct = mcQs.filter(q=>resp[`q${task.questions.indexOf(q)}`]===q.correct).length;
+  const pct = correct/mcQs.length;
+  const grade = pct>=0.9?6:pct>=0.75?5:pct>=0.6?4:pct>=0.45?3:2;
+  await update(ref(db,`grades/${childId}/${taskId}`), {
+    grade, taskId,
+    taskTitle: task.title||'',
+    comment: `Автоматична оценка: ${correct}/${mcQs.length} верни отговора`,
+    createdAt: Date.now(), updatedAt: Date.now()
+  });
+};
+
 // ── NOTES ──
 let allNotesCache = {};
 let currentNoteId = null;
@@ -2892,6 +3193,7 @@ window.switchKidTab = (tab) => {
   if (tab === 'progress') renderProgressChart();
   if (tab === 'notes') loadNotes();
   if (tab === 'library') { listenKidLessons(); renderLibraryList(); }
+  if (tab === 'grades') listenKidGrades();
 };
 
 // ── CALENDAR ──
@@ -3175,7 +3477,8 @@ window.switchTab=(id,btn)=>{
   document.getElementById(id).classList.add('active');btn.classList.add('active');
 };
 
-// init class select
+// init class select - check kmit by default
+document.getElementById("nt-subj-kmit") && (document.getElementById("nt-subj-kmit").checked=true);
 updateClassSelect();
 updateLessonClassSelect();
 </script>
