@@ -2976,7 +2976,7 @@ function renderKidGrades(grades) {
   const gradeNums = entries.map(([k,g])=>g.grade).filter(Boolean);
   const avg = gradeNums.length ? (gradeNums.reduce((a,b)=>a+b,0)/gradeNums.length).toFixed(2) : '—';
   if(avgNum) avgNum.textContent = avg;
-  if(avgNum) avgNum.className = `grade-avg-num grade-${Math.round(parseFloat(avg)||0}`;
+  if(avgNum) avgNum.className = `grade-avg-num grade-${Math.round(parseFloat(avg)||0)}`;
   if(countLbl) countLbl.textContent = `${gradeNums.length} оценк${gradeNums.length===1?'а':'и'}`;
 
   list.innerHTML = entries.map(([k,g]) => {
