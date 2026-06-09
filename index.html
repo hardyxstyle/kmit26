@@ -2705,6 +2705,10 @@ function lessonMatchesStudent(lesson) {
 let libSubjectFilter = 'all';
 
 function renderLibraryList() {
+  // guard - elements must exist
+  const list = document.getElementById('lib-topics-list');
+  if (!list) return;
+
   // all lessons visible to everyone
   const myLessons = Object.entries(allLessonsCache)
     .map(([k,l]) => ({...l, id:k}));
@@ -2719,7 +2723,6 @@ function renderLibraryList() {
 
   const filtered = libSubjectFilter==='all' ? myLessons : myLessons.filter(l=>l.subject===libSubjectFilter);
   const readIds = getReadLessonIds();
-  const list = document.getElementById('lib-topics-list');
   if (!filtered.length) { list.innerHTML='<div class="empty">📚 Няма уроци все още</div>'; return; }
 
   // group by subject > grade > topic
@@ -3416,7 +3419,7 @@ window.switchKidTab = (tab) => {
   if (tab === 'calendar') renderCalendar();
   if (tab === 'progress') renderProgressChart();
   if (tab === 'notes') loadNotes();
-  if (tab === 'library') { listenKidLessons(); renderLibraryList(); }
+  if (tab === 'library') { listenKidLessons(); setTimeout(()=>renderLibraryList(), 50); }
   if (tab === 'grades') listenKidGrades();
 };
 
