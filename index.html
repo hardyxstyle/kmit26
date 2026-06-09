@@ -836,9 +836,16 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
           </select>
         </div>
         <div class="form-row">
-          <input class="form-input" id="nl-topic" placeholder="Тема (напр. Мрежи, Бази данни...)..." maxlength="60"/>
-          <select class="form-select" id="nl-class">
-            <option value="all">Всички класове</option>
+          <input class="form-input" id="nl-topic" placeholder="Тема (напр. Интернет, Word...)..." maxlength="60"/>
+          <select class="form-select" id="nl-grade">
+            <option value="5">5 клас</option>
+            <option value="6">6 клас</option>
+            <option value="7">7 клас</option>
+            <option value="8">8 клас</option>
+            <option value="9">9 клас</option>
+            <option value="10">10 клас</option>
+            <option value="11">11 клас</option>
+            <option value="12">12 клас</option>
           </select>
         </div>
 
@@ -979,6 +986,47 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
           <tbody id="children-tbody"></tbody>
         </table>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT LESSON MODAL -->
+<div class="modal-overlay" id="edit-lesson-modal">
+  <div class="modal" style="max-width:600px">
+    <h3>✏️ Редактирай урок</h3>
+    <input type="hidden" id="edit-lesson-id"/>
+    <div class="form-row" style="margin-bottom:8px">
+      <input class="form-input" id="el-title" placeholder="Заглавие..." maxlength="100" style="flex:3"/>
+      <select class="form-select" id="el-subject">
+        <option value="kmit">КМИТ</option>
+        <option value="it">ИТ</option>
+        <option value="info">Информатика</option>
+      </select>
+    </div>
+    <div class="form-row" style="margin-bottom:8px">
+      <input class="form-input" id="el-topic" placeholder="Тема..." maxlength="60"/>
+      <select class="form-select" id="el-grade">
+        <option value="5">5 клас</option><option value="6">6 клас</option>
+        <option value="7">7 клас</option><option value="8">8 клас</option>
+        <option value="9">9 клас</option><option value="10">10 клас</option>
+        <option value="11">11 клас</option><option value="12">12 клас</option>
+      </select>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px">Съдържание</div>
+    <div id="el-blocks-editor"></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0.75rem">
+      <button class="btn-add-q" onclick="addElBlock('text')">+ Текст</button>
+      <button class="btn-add-q" onclick="addElBlock('image')">+ Снимка</button>
+      <button class="btn-add-q" onclick="addElBlock('video')">+ Видео</button>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px">Тест за проверка</div>
+    <div class="test-builder" style="margin-bottom:8px">
+      <div id="el-quiz-builder"></div>
+      <button class="btn-add-q" onclick="addElQuizQ()">+ Добави въпрос</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('edit-lesson-modal')">Отказ</button>
+      <button class="btn-green" onclick="saveEditLesson()">💾 Запази</button>
     </div>
   </div>
 </div>
@@ -2589,7 +2637,7 @@ window.saveLesson = async () => {
   const lesson = {
     title, topic,
     subject: document.getElementById('nl-subject').value,
-    classFilter: document.getElementById('nl-class').value,
+    grade: document.getElementById('nl-grade').value,
     blocks, quiz,
     createdAt: Date.now()
   };
@@ -2630,7 +2678,8 @@ function renderAdminLessons() {
       <div class="lesson-topic-title">${subjectTag(g.subject)} ${g.topic}</div>
       ${g.lessons.map(([k,l]) => `<div class="lesson-list-item">
         <div class="lesson-list-title">📖 ${l.title}</div>
-        <span style="font-size:11px;color:var(--text3)">${l.blocks?.length||0} блока · ${l.quiz?.length||0} въпроса</span>
+        <span style="font-size:11px;color:var(--text3)">${l.grade||''}кл · ${l.blocks?.length||0} блока · ${l.quiz?.length||0} въпроса</span>
+        <button class="btn-edit" onclick="openEditLesson('${k}')" title="Редактирай урока">✏️</button>
         <button class="btn-red" onclick="deleteLesson('${k}')" title="Изтрий урока">🗑️</button>
       </div>`).join('')}
     </div>`).join('');
@@ -2647,57 +2696,68 @@ function listenKidLessons() {
 }
 
 function lessonMatchesStudent(lesson) {
-  const subjects = getSubjectsForClass(currentUser.class||'');
-  if (!subjects.includes(lesson.subject)) return false;
-  if (lesson.classFilter && lesson.classFilter !== 'all' && lesson.classFilter !== currentUser.class) return false;
+  // all lessons visible to everyone
   return true;
 }
 
 let libSubjectFilter = 'all';
 
 function renderLibraryList() {
+  // all lessons visible to everyone
   const myLessons = Object.entries(allLessonsCache)
-    .filter(([k,l]) => lessonMatchesStudent(l))
     .map(([k,l]) => ({...l, id:k}));
 
-  // build subject tabs
-  const subjects = [...new Set(myLessons.map(l=>l.subject))];
+  // subject tabs
+  const subjects = [...new Set(myLessons.map(l=>l.subject))].sort();
   const tabsEl = document.getElementById('lib-subject-tabs');
   if (subjects.length > 1) {
     tabsEl.innerHTML = `<button class="lib-stab${libSubjectFilter==='all'?' active':''}" onclick="setLibSubject('all')">Всички</button>` +
       subjects.map(s=>`<button class="lib-stab${libSubjectFilter===s?' active':''}" onclick="setLibSubject('${s}')">${subjectLabel(s)}</button>`).join('');
-  } else {
-    tabsEl.innerHTML = '';
-  }
+  } else { tabsEl.innerHTML=''; }
 
-  const filtered = libSubjectFilter === 'all' ? myLessons : myLessons.filter(l=>l.subject===libSubjectFilter);
-
-  // group by topic
-  const grouped = {};
-  filtered.forEach(l => {
-    if (!grouped[l.topic]) grouped[l.topic] = [];
-    grouped[l.topic].push(l);
-  });
-
+  const filtered = libSubjectFilter==='all' ? myLessons : myLessons.filter(l=>l.subject===libSubjectFilter);
   const readIds = getReadLessonIds();
   const list = document.getElementById('lib-topics-list');
-  if (!Object.keys(grouped).length) { list.innerHTML = '<div class="empty">📚 Няма уроци все още</div>'; return; }
+  if (!filtered.length) { list.innerHTML='<div class="empty">📚 Няма уроци все още</div>'; return; }
 
-  list.innerHTML = Object.entries(grouped).map(([topic, lessons]) => `
-    <div class="topic-section">
-      <div class="topic-header">📂 ${topic}</div>
-      ${lessons.map(l => {
-        const isRead = readIds.includes(l.id);
-        return `<div class="lesson-card${isRead?' read':''}" onclick="openLesson('${l.id}')">
-          <div class="lesson-icon">${isRead?'✅':'📖'}</div>
-          <div class="lesson-info">
-            <div class="lesson-title">${l.title}</div>
-            <div class="lesson-meta">${subjectLabel(l.subject)} · ${l.blocks?.length||0} части${l.quiz?.length?' · 🧪 '+l.quiz.length+' въпроса':''}</div>
-          </div>
-          ${isRead?'<span class="lesson-read-badge">✓ Прочетен</span>':''}
+  // group by subject > grade > topic
+  const bySubject = {};
+  filtered.forEach(l => {
+    const s = l.subject||'kmit';
+    const g = l.grade||'5';
+    const t = l.topic||'Общо';
+    if(!bySubject[s]) bySubject[s]={};
+    if(!bySubject[s][g]) bySubject[s][g]={};
+    if(!bySubject[s][g][t]) bySubject[s][g][t]=[];
+    bySubject[s][g][t].push(l);
+  });
+
+  let html='';
+  Object.entries(bySubject).forEach(([subj,grades])=>{
+    if(libSubjectFilter==='all') html+=`<div style="font-size:13px;font-weight:800;color:var(--text2);margin:1rem 0 0.5rem">${subjectLabel(subj)}</div>`;
+    Object.entries(grades).sort((a,b)=>parseInt(a[0])-parseInt(b[0])).forEach(([grade,topics])=>{
+      html+=`<div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin:0.75rem 0 0.4rem">📚 ${grade} клас</div>`;
+      Object.entries(topics).forEach(([topic,lessons])=>{
+        const total=lessons.length;
+        const read=lessons.filter(l=>readIds.includes(l.id)).length;
+        html+=`<div class="topic-section">
+          <div class="topic-header">📂 ${topic} <span style="font-size:10px;color:var(--text3);font-weight:400">${read}/${total} прочетени</span></div>
+          ${lessons.map(l=>{
+            const isRead=readIds.includes(l.id);
+            return `<div class="lesson-card${isRead?' read':''}" onclick="openLesson('${l.id}')">
+              <div class="lesson-icon">${isRead?'✅':'📖'}</div>
+              <div class="lesson-info">
+                <div class="lesson-title">${l.title}</div>
+                <div class="lesson-meta">${l.blocks?.length||0} части${l.quiz?.length?' · 🧪 '+l.quiz.length+' въпроса':''}</div>
+              </div>
+              ${isRead?'<span class="lesson-read-badge">✓ Прочетен</span>':''}
+            </div>`;
+          }).join('')}
         </div>`;
-      }).join('')}
-    </div>`).join('');
+      });
+    });
+  });
+  list.innerHTML=html;
 }
 
 window.setLibSubject = s => { libSubjectFilter = s; renderLibraryList(); };
@@ -3029,6 +3089,102 @@ window.autoGradeTest = async (childId, taskId) => {
     comment: `Автоматична оценка: ${correct}/${mcQs.length} верни отговора`,
     createdAt: Date.now(), updatedAt: Date.now()
   });
+};
+
+
+// ── EDIT LESSON ──
+let elBlockCount = 0;
+let elQuizCount = 0;
+
+window.openEditLesson = async (id) => {
+  const snap = await get(ref(db,`lessons/${id}`));
+  if (!snap.exists()) return;
+  const l = snap.val();
+  document.getElementById('edit-lesson-id').value = id;
+  document.getElementById('el-title').value = l.title||'';
+  document.getElementById('el-subject').value = l.subject||'kmit';
+  document.getElementById('el-topic').value = l.topic||'';
+  document.getElementById('el-grade').value = l.grade||'5';
+  // build blocks
+  elBlockCount=0;
+  document.getElementById('el-blocks-editor').innerHTML='';
+  (l.blocks||[]).forEach(b => addElBlock(b.type, b));
+  // build quiz
+  elQuizCount=0;
+  document.getElementById('el-quiz-builder').innerHTML='';
+  (l.quiz||[]).forEach(q => addElQuizQ(q));
+  document.getElementById('edit-lesson-modal').classList.add('open');
+};
+
+window.addElBlock = (type, data={}) => {
+  elBlockCount++;
+  const n = elBlockCount;
+  const div = document.createElement('div');
+  div.className='lesson-block-editor'; div.id=`elblock-${n}`; div.dataset.type=type;
+  let inner = `<div class="lesson-block-editor-top">
+    <span style="font-size:12px;font-weight:700;color:var(--text3)">${type==='text'?'📝 Текст':type==='image'?'🖼️ Снимка':'🎬 Видео'}</span>
+    <button class="btn-rm-q" onclick="document.getElementById('elblock-${n}').remove()">✕</button>
+  </div>`;
+  if(type==='text') inner+=`<textarea class="form-textarea" id="elb-text-${n}" style="min-height:80px">${data.text||''}</textarea>`;
+  else if(type==='image') inner+=`<input class="form-input" id="elb-img-${n}" value="${data.url||''}" placeholder="URL на снимката..." style="width:100%;margin-bottom:6px"/>
+    <input class="form-input" id="elb-cap-${n}" value="${data.caption||''}" placeholder="Надпис..." style="width:100%"/>`;
+  else if(type==='video') inner+=`<input class="form-input" id="elb-vid-${n}" value="${data.url||''}" placeholder="YouTube URL..." style="width:100%"/>`;
+  div.innerHTML=inner;
+  document.getElementById('el-blocks-editor').appendChild(div);
+};
+
+window.addElQuizQ = (q={}) => {
+  elQuizCount++;
+  const qn=elQuizCount;
+  const div=document.createElement('div');
+  div.className='q-row'; div.id=`elqrow-${qn}`;
+  div.innerHTML=`<div class="q-row-top">
+    <span class="q-num">${qn}.</span>
+    <textarea class="form-textarea" id="elq-text-${qn}" style="flex:1;min-height:44px">${q.text||''}</textarea>
+    <button class="btn-rm-q" onclick="document.getElementById('elqrow-${qn}').remove()">✕</button>
+  </div>
+  <div class="opts-grid">
+    ${['A','B','C','D'].map(l=>`<div class="opt-input-wrap">
+      <span class="opt-letter">${l}</span>
+      <input class="form-input" id="elq-opt-${qn}-${l}" value="${q.options?.[l]||''}" placeholder="${l}..." style="flex:1"/>
+      <input type="radio" name="elq-correct-${qn}" value="${l}" class="correct-radio" ${q.correct===l?'checked':''} title="Правилен"/>
+    </div>`).join('')}
+  </div>`;
+  document.getElementById('el-quiz-builder').appendChild(div);
+};
+
+window.saveEditLesson = async () => {
+  const id = document.getElementById('edit-lesson-id').value;
+  const title = document.getElementById('el-title').value.trim();
+  const topic = document.getElementById('el-topic').value.trim();
+  if(!title||!topic){alert('Въведи заглавие и тема');return;}
+  // collect blocks
+  const blocks=[];
+  document.querySelectorAll('#el-blocks-editor .lesson-block-editor').forEach(el=>{
+    const n=el.id.replace('elblock-',''), type=el.dataset.type;
+    if(type==='text'){const t=document.getElementById(`elb-text-${n}`)?.value.trim();if(t)blocks.push({type:'text',text:t});}
+    else if(type==='image'){const u=document.getElementById(`elb-img-${n}`)?.value.trim(),c=document.getElementById(`elb-cap-${n}`)?.value.trim();if(u)blocks.push({type:'image',url:u,caption:c||''});}
+    else if(type==='video'){const u=document.getElementById(`elb-vid-${n}`)?.value.trim();if(u)blocks.push({type:'video',url:u});}
+  });
+  // collect quiz
+  const quiz=[];
+  document.querySelectorAll('#el-quiz-builder .q-row').forEach(row=>{
+    const qn=row.id.replace('elqrow-','');
+    const text=document.getElementById(`elq-text-${qn}`)?.value.trim();
+    if(!text)return;
+    const options={};
+    ['A','B','C','D'].forEach(l=>{const v=document.getElementById(`elq-opt-${qn}-${l}`)?.value.trim();if(v)options[l]=v;});
+    const chk=row.querySelector(`input[name="elq-correct-${qn}"]:checked`);
+    quiz.push({text,options,correct:chk?chk.value:null});
+  });
+  await update(ref(db,`lessons/${id}`),{
+    title, topic,
+    subject:document.getElementById('el-subject').value,
+    grade:document.getElementById('el-grade').value,
+    blocks, quiz, updatedAt:Date.now()
+  });
+  closeModal('edit-lesson-modal');
+  alert('✓ Урокът е обновен!');
 };
 
 // ── NOTES ──
