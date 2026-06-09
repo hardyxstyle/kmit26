@@ -2693,9 +2693,7 @@ function renderAdminLessons() {
 function listenKidLessons() {
   onValue(ref(db,'lessons'), snap => {
     allLessonsCache = snap.exists() ? snap.val() : {};
-    if (document.getElementById('kid-view-library')?.style.display !== 'none') {
-      renderLibraryList();
-    }
+    renderLibraryList();
   });
 }
 
