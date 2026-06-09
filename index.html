@@ -3417,7 +3417,7 @@ window.printTest = async (taskId) => {
 
 // ── KID TABS ──
 window.switchKidTab = (tab) => {
-  ['tasks','calendar','progress','notes'].forEach(t => {
+  ['tasks','calendar','progress','notes','library','grades'].forEach(t => {
     const el = document.getElementById(`kid-view-${t}`);
     if (el) el.style.display = t===tab ? 'block' : 'none';
     const btn = document.getElementById(`kid-tab-${t}`);
