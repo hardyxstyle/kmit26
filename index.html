@@ -2693,7 +2693,12 @@ function renderAdminLessons() {
 function listenKidLessons() {
   onValue(ref(db,'lessons'), snap => {
     allLessonsCache = snap.exists() ? snap.val() : {};
-    renderLibraryList();
+    console.log('lessons loaded:', Object.keys(allLessonsCache).length);
+    // only render if library tab is active
+    const libView = document.getElementById('kid-view-library');
+    if (libView && libView.style.display !== 'none') {
+      renderLibraryList();
+    }
   });
 }
 
@@ -2708,6 +2713,8 @@ function renderLibraryList() {
   // guard - elements must exist
   const list = document.getElementById('lib-topics-list');
   if (!list) return;
+
+  console.log('renderLibraryList called, cache size:', Object.keys(allLessonsCache).length, allLessonsCache);
 
   // all lessons visible to everyone
   const myLessons = Object.entries(allLessonsCache)
@@ -3419,7 +3426,14 @@ window.switchKidTab = (tab) => {
   if (tab === 'calendar') renderCalendar();
   if (tab === 'progress') renderProgressChart();
   if (tab === 'notes') loadNotes();
-  if (tab === 'library') { listenKidLessons(); setTimeout(()=>renderLibraryList(), 50); }
+  if (tab === 'library') {
+    // make sure we have latest data then render
+    get(ref(db,'lessons')).then(snap => {
+      allLessonsCache = snap.exists() ? snap.val() : {};
+      console.log('library tab opened, lessons:', Object.keys(allLessonsCache).length);
+      renderLibraryList();
+    });
+  }
   if (tab === 'grades') listenKidGrades();
 };
 
