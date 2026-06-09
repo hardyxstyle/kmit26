@@ -82,9 +82,9 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
 
 /* SUBJECT FILTER TABS */
 .subject-tabs{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;}
-.stab{padding:8px 12px;border-radius:99px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid transparent;background:none;color:var(--text3);transition:all .2s;}
-.stab.active{background:var(--green);color:#fff;border-color:var(--green);box-shadow:0 2px 8px rgba(29,158,117,0.25);}
-.stab:hover:not(.active){background:var(--green-light);color:var(--green-dark);}
+.stab{padding:8px 12px;border-radius:99px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid var(--gray-200);background:var(--white);color:var(--text3);transition:all .2s;}
+.stab.active{background:var(--green) !important;color:#fff !important;border-color:var(--green) !important;box-shadow:0 2px 8px rgba(29,158,117,0.3);}
+.stab:hover:not(.active){background:var(--green-light);color:var(--green-dark);border-color:var(--green);}
 
 /* POINTS */
 .points-banner{background:var(--white);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem;box-shadow:var(--shadow);}
@@ -3417,24 +3417,34 @@ window.printTest = async (taskId) => {
 
 // ── KID TABS ──
 window.switchKidTab = (tab) => {
-  ['tasks','calendar','progress','notes','library','grades'].forEach(t => {
-    const el = document.getElementById(`kid-view-${t}`);
-    if (el) el.style.display = t===tab ? 'block' : 'none';
-    const btn = document.getElementById(`kid-tab-${t}`);
-    if (btn) btn.classList.toggle('active', t===tab);
+  const allTabs = ['tasks','calendar','progress','notes','library','grades'];
+  // show/hide views
+  allTabs.forEach(t => {
+    const el = document.getElementById('kid-view-' + t);
+    if (el) el.style.display = (t === tab) ? 'block' : 'none';
   });
+  // update active button style
+  allTabs.forEach(t => {
+    const btn = document.getElementById('kid-tab-' + t);
+    if (btn) {
+      if (t === tab) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    }
+  });
+  // tab-specific actions
   if (tab === 'calendar') renderCalendar();
   if (tab === 'progress') renderProgressChart();
   if (tab === 'notes') loadNotes();
+  if (tab === 'grades') listenKidGrades();
   if (tab === 'library') {
-    // make sure we have latest data then render
     get(ref(db,'lessons')).then(snap => {
       allLessonsCache = snap.exists() ? snap.val() : {};
-      console.log('library tab opened, lessons:', Object.keys(allLessonsCache).length);
       renderLibraryList();
-    });
+    }).catch(e => console.error('lessons error:', e));
   }
-  if (tab === 'grades') listenKidGrades();
 };
 
 // ── CALENDAR ──
