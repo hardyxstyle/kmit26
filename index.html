@@ -865,8 +865,12 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
           <button class="btn-add-q" onclick="addLessonQuizQ()">+ Добави въпрос</button>
         </div>
 
-        <div style="margin-top:10px">
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn-green" onclick="saveLesson()">+ Запази урока</button>
+          <label class="btn-add-q" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:9px 16px" title="Импортирай урок от JSON файл">
+            📂 Импорт от JSON
+            <input type="file" id="lesson-json-import" accept=".json" style="display:none" onchange="importLessonJSON(this)"/>
+          </label>
         </div>
       </div>
 
@@ -3091,6 +3095,72 @@ window.autoGradeTest = async (childId, taskId) => {
   });
 };
 
+
+// ── LESSON JSON IMPORT ──
+window.importLessonJSON = (input) => {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.title) { alert('Невалиден JSON — липсва "title"'); return; }
+      // fill form fields
+      if (data.title) document.getElementById('nl-title').value = data.title;
+      if (data.topic) document.getElementById('nl-topic').value = data.topic;
+      if (data.subject) document.getElementById('nl-subject').value = data.subject;
+      if (data.grade) document.getElementById('nl-grade').value = data.grade;
+      // build blocks
+      lessonBlockCount = 0;
+      document.getElementById('lesson-blocks-editor').innerHTML = '';
+      (data.blocks||[]).forEach(b => {
+        lessonBlockCount++;
+        const n = lessonBlockCount;
+        const div = document.createElement('div');
+        div.className = 'lesson-block-editor';
+        div.id = `lblock-${n}`;
+        div.dataset.type = b.type;
+        let inner = `<div class="lesson-block-editor-top">
+          <span style="font-size:12px;font-weight:700;color:var(--text3)">${b.type==='text'?'📝 Текст':b.type==='image'?'🖼️ Снимка':'🎬 Видео'}</span>
+          <button class="btn-rm-q" onclick="document.getElementById('lblock-${n}').remove()">✕</button>
+        </div>`;
+        if(b.type==='text') inner+=`<textarea class="form-textarea" id="lb-text-${n}" style="min-height:100px">${b.text||''}</textarea>`;
+        else if(b.type==='image') inner+=`<input class="form-input" id="lb-img-${n}" value="${b.url||''}" placeholder="URL..." style="width:100%;margin-bottom:6px"/>
+          <input class="form-input" id="lb-img-cap-${n}" value="${b.caption||''}" placeholder="Надпис..." style="width:100%"/>`;
+        else if(b.type==='video') inner+=`<input class="form-input" id="lb-vid-${n}" value="${b.url||''}" placeholder="YouTube URL..." style="width:100%"/>`;
+        div.innerHTML = inner;
+        document.getElementById('lesson-blocks-editor').appendChild(div);
+      });
+      // build quiz
+      lessonQuizCount = 0;
+      document.getElementById('lesson-quiz-builder').innerHTML = '';
+      (data.quiz||[]).forEach(q => {
+        lessonQuizCount++;
+        const qn = lessonQuizCount;
+        const div = document.createElement('div');
+        div.className='q-row'; div.id=`lqrow-${qn}`;
+        div.innerHTML=`<div class="q-row-top">
+          <span class="q-num">${qn}.</span>
+          <textarea class="form-textarea" id="lq-text-${qn}" style="flex:1;min-height:44px">${q.text||''}</textarea>
+          <button class="btn-rm-q" onclick="document.getElementById('lqrow-${qn}').remove()">✕</button>
+        </div>
+        <div class="opts-grid">
+          ${['A','B','C','D'].map(l=>`<div class="opt-input-wrap">
+            <span class="opt-letter">${l}</span>
+            <input class="form-input" id="lq-opt-${qn}-${l}" value="${q.options?.[l]||''}" placeholder="${l}..." style="flex:1"/>
+            <input type="radio" name="lq-correct-${qn}" value="${l}" class="correct-radio" ${q.correct===l?'checked':''} title="Правилен"/>
+          </div>`).join('')}
+        </div>`;
+        document.getElementById('lesson-quiz-builder').appendChild(div);
+      });
+      alert(`✓ Урокът е зареден! Провери данните и натисни "Запази урока".`);
+      input.value='';
+    } catch(e) {
+      alert('Грешка при четене на JSON: ' + e.message);
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+};
 
 // ── EDIT LESSON ──
 let elBlockCount = 0;
