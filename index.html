@@ -1168,6 +1168,7 @@ import { getAuth, signInAnonymously }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 
+
 const firebaseConfig = {
   apiKey: "AIzaSyDqblrZI05j-Y7jRYknBoRGg4Y22LeisAk",
   authDomain: "kmit-440a6.firebaseapp.com",
@@ -2182,6 +2183,7 @@ let currentAdmin = null; // { name, username, subject, isSuperAdmin }
 let allAdminsCache = {};
 
 window.checkAdminPass = async () => {
+  await signInAnonymously(auth);
   const username = document.getElementById('admin-username-input').value.trim().toLowerCase();
   const pass = document.getElementById('admin-pass-input').value;
   const err = document.getElementById('admin-pass-err');
