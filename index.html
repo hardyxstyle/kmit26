@@ -2651,7 +2651,7 @@ window.saveLesson = async () => {
   const blocks = collectLessonBlocks();
   if (!blocks.length) { alert('Добави поне един блок съдържание'); return; }
   const quiz = collectLessonQuiz();
-  if (quiz.some(q => !q.correct)) { alert('Всички въпроси трябва да имат верен отговор'); return; }
+  if (quiz.length && quiz.some(q => !q.correct)) { alert('Всички въпроси трябва да имат верен отговор'); return; }
   const lesson = {
     title, topic,
     subject: document.getElementById('nl-subject').value,
@@ -2687,13 +2687,13 @@ function renderAdminLessons() {
   // group by subject+topic
   const grouped = {};
   entries.forEach(([k,l]) => {
-    const key = `${l.subject}||${l.topic}`;
-    if (!grouped[key]) grouped[key] = { subject:l.subject, topic:l.topic, lessons:[] };
+    const key = `${l.subject}||${l.grade||''}||${l.topic}`;
+    if (!grouped[key]) grouped[key] = { subject:l.subject, topic:l.topic, grade:l.grade, lessons:[] };
     grouped[key].lessons.push([k,l]);
   });
   list.innerHTML = Object.values(grouped).map(g => `
     <div class="lesson-topic-card">
-      <div class="lesson-topic-title">${subjectTag(g.subject)} ${g.topic}</div>
+      <div class="lesson-topic-title">${subjectTag(g.subject)} ${g.grade?g.grade+' клас · ':''}${g.topic}</div>
       ${g.lessons.map(([k,l]) => `<div class="lesson-list-item">
         <div class="lesson-list-title">📖 ${l.title}</div>
         <span style="font-size:11px;color:var(--text3)">${l.grade||''}кл · ${l.blocks?.length||0} блока · ${l.quiz?.length||0} въпроса</span>
