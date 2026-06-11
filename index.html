@@ -1321,7 +1321,8 @@ window.doLogin = async () => {
   // show admin switch button if student has admin rights
   const switchBtn = document.getElementById('kid-admin-switch-btn');
   if(switchBtn) switchBtn.style.display = currentUser.isStudentAdmin ? 'inline-block' : 'none';
-  showScreen('screen-app');
+  firebase.auth().signInAnonymously(); 
+showScreen('screen-app');             
   listenKidTasks();
   listenLeaderboard();
   listenKidMessages();
