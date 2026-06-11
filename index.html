@@ -10,6 +10,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="apple-mobile-web-app-title" content="KMIT"/>
 <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3eb.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
 :root{
@@ -27,8 +29,8 @@
   --shadow-lg:0 8px 32px rgba(0,0,0,0.13);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Nunito Sans',sans-serif;background:#F0F4F8;color:var(--text);min-height:100vh;}
-h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
+body{font-family:'Nunito Sans',Arial,sans-serif;background:#F0F4F8;color:var(--text);min-height:100vh;}
+h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
 .screen{display:none;min-height:100vh;}
 .screen.active{display:flex;flex-direction:column;}
 
@@ -1162,8 +1164,7 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, get, push, update, remove, onValue, off }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-import { getAuth, signInAnonymously }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyDqblrZI05j-Y7jRYknBoRGg4Y22LeisAk",
@@ -1177,7 +1178,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const auth = getAuth(app);
+
 async function hashPass(pass) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pass));
   return Array.from(new Uint8Array(buf)).map(x=>x.toString(16).padStart(2,'0')).join('');
