@@ -279,6 +279,16 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
 .lib-stab:hover:not(.active){background:var(--purple-light);border-color:var(--purple);}
 .topic-section{margin-bottom:1.5rem;}
 .topic-header{font-size:13px;font-weight:800;color:var(--text2);margin-bottom:0.6rem;display:flex;align-items:center;gap:8px;}
+.grade-accordion{border-radius:var(--radius);overflow:hidden;margin-bottom:0.75rem;box-shadow:var(--shadow);}
+.grade-accordion-header{background:var(--white);padding:0.85rem 1rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background .15s;border-left:4px solid var(--green);}
+.grade-accordion-header:hover{background:var(--green-light);}
+.grade-accordion-header.open{background:var(--green-light);}
+.grade-accordion-title{font-size:14px;font-weight:800;color:var(--text);}
+.grade-accordion-meta{font-size:11px;color:var(--text3);margin-top:2px;}
+.grade-accordion-arrow{font-size:12px;color:var(--text3);transition:transform .2s;}
+.grade-accordion-header.open .grade-accordion-arrow{transform:rotate(180deg);}
+.grade-accordion-body{display:none;padding:0.75rem;background:var(--gray-100);}
+.grade-accordion-body.open{display:block;}
 .topic-header::after{content:'';flex:1;height:1px;background:var(--gray-200);}
 .lesson-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:0.9rem 1rem;margin-bottom:0.6rem;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s;border:1.5px solid transparent;}
 .lesson-card:hover{box-shadow:var(--shadow-md);border-color:var(--purple);}
@@ -2748,11 +2758,31 @@ function renderLibraryList() {
     bySubject[s][g][t].push(l);
   });
 
+  // remember open grades
+  const openGrades = window._libOpenGrades || {};
+
   let html='';
   Object.entries(bySubject).forEach(([subj,grades])=>{
-    if(libSubjectFilter==='all') html+=`<div style="font-size:13px;font-weight:800;color:var(--text2);margin:1rem 0 0.5rem">${subjectLabel(subj)}</div>`;
+    if(libSubjectFilter==='all') html+=`<div style="font-size:13px;font-weight:800;color:var(--text2);margin:1.25rem 0 0.5rem;padding-left:4px">${subjectLabel(subj)}</div>`;
     Object.entries(grades).sort((a,b)=>parseInt(a[0])-parseInt(b[0])).forEach(([grade,topics])=>{
-      html+=`<div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin:0.75rem 0 0.4rem">📚 ${grade} клас</div>`;
+      const gradeKey = subj+'-'+grade;
+      // default open only current student's grade
+      const isOpen = gradeKey in openGrades ? openGrades[gradeKey] : (currentUser?.class && parseInt(currentUser.class)===parseInt(grade));
+      // count all lessons and read in this grade
+      const allLessonsInGrade = Object.values(topics).flat();
+      const totalInGrade = allLessonsInGrade.length;
+      const readInGrade = allLessonsInGrade.filter(l=>readIds.includes(l.id)).length;
+
+      html+=`<div class="grade-accordion">
+        <div class="grade-accordion-header${isOpen?' open':''}" onclick="toggleGradeAccordion('${gradeKey}')">
+          <div>
+            <div class="grade-accordion-title">📚 ${grade} клас</div>
+            <div class="grade-accordion-meta">${totalInGrade} урок${totalInGrade!==1?'а':''} · ${readInGrade}/${totalInGrade} прочетени</div>
+          </div>
+          <span class="grade-accordion-arrow">▼</span>
+        </div>
+        <div class="grade-accordion-body${isOpen?' open':''}">`;
+
       Object.entries(topics).forEach(([topic,lessons])=>{
         const total=lessons.length;
         const read=lessons.filter(l=>readIds.includes(l.id)).length;
@@ -2771,10 +2801,27 @@ function renderLibraryList() {
           }).join('')}
         </div>`;
       });
+
+      html+=`</div></div>`;
     });
   });
   list.innerHTML=html;
 }
+
+window.toggleGradeAccordion = (key) => {
+  if (!window._libOpenGrades) window._libOpenGrades = {};
+  // find header and body
+  const headers = document.querySelectorAll('.grade-accordion-header');
+  const bodies = document.querySelectorAll('.grade-accordion-body');
+  headers.forEach((h,i) => {
+    if (h.getAttribute('onclick') === `toggleGradeAccordion('${key}')`) {
+      const isOpen = h.classList.contains('open');
+      h.classList.toggle('open', !isOpen);
+      bodies[i].classList.toggle('open', !isOpen);
+      window._libOpenGrades[key] = !isOpen;
+    }
+  });
+};
 
 window.setLibSubject = s => { libSubjectFilter = s; renderLibraryList(); };
 
