@@ -1152,6 +1152,8 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',sans-serif;}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, get, push, update, remove, onValue, off }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, signInAnonymously }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDqblrZI05j-Y7jRYknBoRGg4Y22LeisAk",
@@ -1165,6 +1167,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
 async function hashPass(pass) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pass));
   return Array.from(new Uint8Array(buf)).map(x=>x.toString(16).padStart(2,'0')).join('');
@@ -1298,6 +1301,7 @@ window.addEventListener('load', () => {
 
 // ── STUDENT LOGIN ──
 window.doLogin = async () => {
+  await signInAnonymously(auth);
   const username = document.getElementById('login-username').value.trim().toLowerCase();
   const password = document.getElementById('login-password').value;
   const err = document.getElementById('login-err');
@@ -1321,8 +1325,7 @@ window.doLogin = async () => {
   // show admin switch button if student has admin rights
   const switchBtn = document.getElementById('kid-admin-switch-btn');
   if(switchBtn) switchBtn.style.display = currentUser.isStudentAdmin ? 'inline-block' : 'none';
-  firebase.auth().signInAnonymously(); 
-showScreen('screen-app');             
+  showScreen('screen-app');
   listenKidTasks();
   listenLeaderboard();
   listenKidMessages();
