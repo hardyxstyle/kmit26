@@ -1164,6 +1164,8 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, get, push, update, remove, onValue, off }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, signInAnonymously }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 
 const firebaseConfig = {
@@ -1178,6 +1180,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
 
 async function hashPass(pass) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pass));
@@ -2708,8 +2711,7 @@ function renderAdminLessons() {
 function listenKidLessons() {
   onValue(ref(db,'lessons'), snap => {
     allLessonsCache = snap.exists() ? snap.val() : {};
-    console.log('lessons loaded:', Object.keys(allLessonsCache).length);
-    // only render if library tab is active
+      // only render if library tab is active
     const libView = document.getElementById('kid-view-library');
     if (libView && libView.style.display !== 'none') {
       renderLibraryList();
@@ -2728,8 +2730,6 @@ function renderLibraryList() {
   // guard - elements must exist
   const list = document.getElementById('lib-topics-list');
   if (!list) return;
-
-  console.log('renderLibraryList called, cache size:', Object.keys(allLessonsCache).length, allLessonsCache);
 
   // all lessons visible to everyone
   const myLessons = Object.entries(allLessonsCache)
@@ -2763,6 +2763,7 @@ function renderLibraryList() {
   const openGrades = window._libOpenGrades || {};
 
   let html='';
+  try {
   Object.entries(bySubject).forEach(([subj,grades])=>{
     if(libSubjectFilter==='all') html+=`<div style="font-size:13px;font-weight:800;color:var(--text2);margin:1.25rem 0 0.5rem;padding-left:4px">${subjectLabel(subj)}</div>`;
     Object.entries(grades).sort((a,b)=>parseInt(a[0])-parseInt(b[0])).forEach(([grade,topics])=>{
@@ -2807,6 +2808,7 @@ function renderLibraryList() {
     });
   });
   list.innerHTML=html;
+  } catch(e) { console.error('renderLibraryList error:', e); list.innerHTML='<div class="empty">Грешка: '+e.message+'</div>'; }
 }
 
 window.toggleGradeAccordion = (key) => {
