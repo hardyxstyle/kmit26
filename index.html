@@ -2,6 +2,7 @@
 <html lang="bg">
 <head>
 <meta charset="UTF-8"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>KMIT Платформа</title>
 <link rel="manifest" href="manifest.json"/>
@@ -3435,6 +3436,7 @@ window.printTest = async (taskId) => {
   const profil = t.profilFilter === 'profil' ? ' (Профил)' : '';
 
   let html = `<!DOCTYPE html><html lang="bg"><head><meta charset="UTF-8"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:;">
   <title>${t.title}</title>
   <style>
     body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:2rem;color:#111;}
