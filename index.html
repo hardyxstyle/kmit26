@@ -3687,7 +3687,7 @@ function renderAdminMessages() {
       : m.target==='all' ? '👥 Всички' : '🏫 ' + m.target;
     const replies = m.replies ? Object.entries(m.replies) : [];
     const repliesHtml = replies.length ? `<div style="margin-top:8px">${replies.map(([rid,r])=>
-      `<div class="admin-reply-row"><span class="admin-reply-who">${allChildrenCache[r.childId]?.name||'Ученик'} (${allChildrenCache[r.childId]?.class||''}): </span>${r.text}</div>`
+      `<div class="admin-reply-row"><span class="admin-reply-who">${r.name||allChildrenCache[r.childId]?.name||'Ученик'} (${r.class||allChildrenCache[r.childId]?.class||''}): </span>${r.text}</div>`
     ).join('')}</div>` : '';
     return `<div class="admin-msg-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
@@ -3732,7 +3732,7 @@ function renderKidMessages() {
     const replies = m.replies ? Object.values(m.replies) : [];
     const myReply = m.replies ? Object.values(m.replies).find(r=>r.childId===child.childId) : null;
     const repliesHtml = replies.map(r =>
-      `<div class="msg-reply"><div class="msg-reply-name">${allChildrenCache[r.childId]?.name||'Ученик'}:</div>${r.text}</div>`
+      `<div class="msg-reply"><div class="msg-reply-name">${r.name||allChildrenCache[r.childId]?.name||'Ученик'}${r.class?' ('+r.class+')':''}:</div>${r.text}</div>`
     ).join('');
     const replyForm = myReply ? '' : `
       <textarea class="msg-reply-input" id="reply-${k}" placeholder="Напиши отговор..."></textarea>
@@ -3758,6 +3758,8 @@ window.sendReply = async (msgId) => {
   if (!text) return;
   await push(ref(db,`messages/${msgId}/replies`), {
     childId: currentUser.childId,
+    name: currentUser.name,
+    class: currentUser.class||'',
     text,
     createdAt: Date.now()
   });
