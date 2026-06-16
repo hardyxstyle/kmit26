@@ -2116,8 +2116,9 @@ function computeStudentStats(tasks, cid, children) {
   classmates.sort((a,b)=>(b[1].points||0)-(a[1].points||0));
   const rank = classmates.findIndex(([k])=>k===cid)+1 || 999;
 
-  // read lessons
+  // read lessons - from localStorage
   const readLessons = getReadLessonIds().length;
+  console.log("readLessons:", readLessons);
 
   // perfect lesson quiz
   let perfectLessonQuiz = 0;
@@ -2862,17 +2863,29 @@ function markLessonRead(id) {
     try { localStorage.setItem(`kmit_read_lessons_${currentUser?.childId}`, JSON.stringify(ids)); } catch(e){}
     // award points for reading
     const lesson = allLessonsCache[id];
-    if (lesson?.points && currentUser?.childId) {
-      const pts = parseInt(lesson.points)||5;
-      get(ref(db,`children/${currentUser.childId}`)).then(snap => {
+    const cid = currentUser?.childId;
+    if (cid) {
+      const pts = parseInt(lesson?.points)||5;
+      // add points to Firebase
+      get(ref(db,`children/${cid}`)).then(snap => {
         if (!snap.exists()) return;
         const current = snap.val().points || 0;
-        update(ref(db,`children/${currentUser.childId}`), { points: current + pts });
+        update(ref(db,`children/${cid}`), { points: current + pts });
+        // update local display
+        document.getElementById('kid-pts').textContent = (current + pts) + ' ⭐';
       });
-      // save to lessonPoints for tracking
-      update(ref(db,`lessonPoints/${currentUser.childId}/${id}`), { points: pts, readAt: Date.now() });
+      // save read record to Firebase too (not just localStorage)
+      update(ref(db,`lessonPoints/${cid}/${id}`), { points: pts, readAt: Date.now() });
+      // check badges after short delay
+      setTimeout(() => {
+        checkAndAwardBadges(allTasksCache, cid).catch(()=>{});
+      }, 500);
     }
   }
+}
+
+function getReadLessonCount() {
+  return getReadLessonIds().length;
 }
 
 window.openLesson = (id) => {
