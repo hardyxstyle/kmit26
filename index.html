@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>KMIT Платформа</title>
+<title>Ctrl+LearnBG</title>
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#1D9E75"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<meta name="apple-mobile-web-app-title" content="KMIT"/>
+<meta name="apple-mobile-web-app-title" content="Ctrl+LearnBG"/>
 <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3eb.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -31,8 +31,9 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Nunito Sans',Arial,sans-serif;background:#F0F4F8;color:var(--text);min-height:100vh;}
 h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
-.screen{display:none;min-height:100vh;}
-.screen.active{display:flex;flex-direction:column;}
+.screen{display:none !important;min-height:100vh;}
+.screen.active{display:block !important;}
+.screen.active.flex-screen{display:flex !important;flex-direction:column;}
 
 /* HOME */
 #screen-home{background:linear-gradient(160deg,#0F6E56 0%,#1D9E75 50%,#2DBD8E 100%);align-items:center;justify-content:center;padding:2rem 1rem;}
@@ -460,7 +461,7 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
 <body>
 
 <!-- HOME -->
-<div id="screen-home" class="screen active" style="background:#0d1117;min-height:100vh;padding:0;">
+<div id="screen-home" class="screen active flex-screen" style="background:#0d1117;min-height:100vh;padding:0;">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -499,11 +500,11 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
     @media(max-width:600px){.hcards{grid-template-columns:1fr 1fr;}.hhero h1{font-size:1.8rem;}.hn{padding:.75rem 1rem;}.hhero{padding:2rem 1rem 1rem;}.hcards{padding:0 1rem 2rem;}}
   </style>
 
-  <nav class="hn">
-    <div class="hlogo"><span class="hc">Ctrl</span><span class="hp">+</span>LearnBG</div>
-    <div class="hnr">
+  <nav class="hn" style="justify-content:space-between">
+    <div class="hlogo" onclick="showScreen('screen-home')" style="cursor:pointer"><span class="hc">Ctrl</span><span class="hp">+</span>LearnBG</div>
+    <div style="display:flex;align-items:center;gap:.8rem">
       <a class="hyt" href="https://www.youtube.com/@ctrllearnbg" target="_blank"><i class="ti ti-brand-youtube"></i> YouTube</a>
-      <button class="hlbtn" onclick="showScreen('screen-admin-login')"><i class="ti ti-lock" style="font-size:12px;vertical-align:-1px"></i> Вход учител</button>
+
     </div>
   </nav>
 
@@ -512,8 +513,34 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
     <h1>Учи. Играй.<br><span class="hgreen">Напредвай.</span></h1>
     <p>Задачи, тестове, НОИТ подготовка и образователни игри — всичко на едно място за твоя клас.</p>
     <div class="hbtns">
-      <button class="hbg" onclick="showScreen('screen-login')"><i class="ti ti-login" style="font-size:15px"></i> Влез в платформата</button>
+      <button class="hbg" onclick="showLoginChoice()"><i class="ti ti-login" style="font-size:15px"></i> Влез в платформата</button>
       <button class="hgh" onclick="promptInstall()"><i class="ti ti-device-mobile" style="font-size:15px"></i> Инсталирай</button>
+    </div>
+
+    <!-- login choice modal -->
+    <div id="login-choice-overlay" onclick="hideLoginChoice()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;backdrop-filter:blur(4px)"></div>
+    <div id="login-choice-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;width:100%;max-width:360px;padding:1rem;">
+      <div style="background:#161b22;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:2rem;font-family:'Inter',sans-serif;">
+        <div style="text-align:center;margin-bottom:1.5rem;">
+          <div style="font-size:1rem;font-weight:600;color:#e6edf3;margin-bottom:.3rem">Влез като...</div>
+          <div style="font-size:.8rem;color:#8b949e">Избери своята роля</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.75rem;">
+          <button onclick="hideLoginChoice();showScreen('screen-login')" style="background:rgba(0,212,170,.08);border:1px solid rgba(0,212,170,.25);border-radius:10px;padding:1rem;cursor:pointer;text-align:left;transition:background .15s;font-family:'Inter',sans-serif;" onmouseover="this.style.background='rgba(0,212,170,.15)'" onmouseout="this.style.background='rgba(0,212,170,.08)'">
+            <div style="font-size:1.3rem;margin-bottom:.3rem">🎒</div>
+            <div style="font-size:.9rem;font-weight:600;color:#e6edf3;margin-bottom:.2rem">Ученик</div>
+            <div style="font-size:.75rem;color:#8b949e">Задачи, тестове, библиотека и значки</div>
+          </button>
+          <button onclick="hideLoginChoice();showScreen('screen-admin-login')" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem;cursor:pointer;text-align:left;transition:background .15s;font-family:'Inter',sans-serif;" onmouseover="this.style.background='rgba(255,255,255,.07)'" onmouseout="this.style.background='rgba(255,255,255,.03)'">
+            <div style="font-size:1.3rem;margin-bottom:.3rem">👩‍🏫</div>
+            <div style="font-size:.9rem;font-weight:600;color:#e6edf3;margin-bottom:.2rem">Учител</div>
+            <div style="font-size:.75rem;color:#8b949e">Панел за управление на класа</div>
+          </button>
+        </div>
+        <div style="text-align:center;margin-top:1rem;">
+          <span onclick="hideLoginChoice()" style="font-size:.78rem;color:#8b949e;cursor:pointer;" onmouseover="this.style.color='#00d4aa'" onmouseout="this.style.color='#8b949e'">Затвори</span>
+        </div>
+      </div>
     </div>
 
     <div class="hcards">
@@ -534,189 +561,57 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
 </div>
 
 <!-- STUDENT LOGIN -->
-<div id="screen-login" class="screen">
-  <div class="login-card" style="margin:auto">
-    <div class="login-logo">KMIT<span>★</span></div>
-    <div class="login-sub">Влез с твоето потребителско ime и парола</div>
-    <span class="back-link" onclick="showScreen('screen-home')" title="Обратно към началната страница">← Назад</span>
-    <div class="field-label">Потребителско ime</div>
-    <input class="text-input" id="login-username" placeholder="Потребителско ime..." autocomplete="username" autocapitalize="none" onkeydown="if(event.key==='Enter')document.getElementById('login-password').focus()"/>
-    <div class="field-label">Парола</div>
-    <input class="text-input" id="login-password" type="password" placeholder="Парола..." autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
-    <div class="login-err" id="login-err">Грешно потребителско ime или парола</div>
-    <button class="btn-primary" onclick="doLogin()">Влез</button>
+<div id="screen-login" class="screen flex-screen" style="background:#0d1117;min-height:100vh;align-items:center;justify-content:center;padding:2rem;">
+  <div style="width:100%;max-width:380px;">
+    <div style="text-align:center;margin-bottom:2rem;cursor:pointer" onclick="showScreen('screen-home')">
+      <div style="font-size:1.4rem;font-weight:700;color:#e6edf3;letter-spacing:-.5px;margin-bottom:.4rem;font-family:'Inter',sans-serif"><span style="color:#00d4aa">Ctrl</span><span style="color:#8b949e;font-weight:400">+</span>LearnBG</div>
+      <div style="font-size:.85rem;color:#8b949e;font-family:'Inter',sans-serif">Влез в своя акаунт</div>
+    </div>
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:2rem;">
+      <div style="margin-bottom:1rem;">
+        <label style="display:block;font-size:.75rem;font-weight:500;color:#8b949e;margin-bottom:.4rem;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:.05em">Потребителско ime</label>
+        <input id="login-username" class="text-input" placeholder="Въведи потребителско ime..." autocapitalize="none" onkeydown="if(event.key==='Enter')document.getElementById('login-password').focus()" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#e6edf3;border-radius:8px;font-family:'Inter',sans-serif;width:100%;"/>
+      </div>
+      <div style="margin-bottom:1.5rem;">
+        <label style="display:block;font-size:.75rem;font-weight:500;color:#8b949e;margin-bottom:.4rem;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:.05em">Парола</label>
+        <input id="login-password" type="password" class="text-input" placeholder="Въведи парола..." onkeydown="if(event.key==='Enter')doLogin()" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#e6edf3;border-radius:8px;font-family:'Inter',sans-serif;width:100%;"/>
+      </div>
+      <div class="login-err" id="login-err" style="color:#ff6b6b;font-size:.8rem;margin-bottom:.75rem;display:none;font-family:'Inter',sans-serif;">Грешно потребителско ime или парола</div>
+      <button onclick="doLogin()" style="width:100%;background:#00d4aa;color:#0d1117;font-weight:600;font-size:.9rem;padding:.8rem;border-radius:8px;border:none;cursor:pointer;font-family:'Inter',sans-serif;">Влез</button>
+    </div>
+    <div style="text-align:center;margin-top:1.25rem;">
+      <span onclick="showScreen('screen-home')" style="font-size:.78rem;color:#8b949e;cursor:pointer;font-family:'Inter',sans-serif;" onmouseover="this.style.color='#00d4aa'" onmouseout="this.style.color='#8b949e'">← Назад</span>
+    </div>
   </div>
 </div>
 
-<!-- ADMIN LOGIN -->
-<div id="screen-admin-login" class="screen">
-  <div class="admin-login-card" style="margin:auto">
-    <div style="font-size:40px;margin-bottom:0.75rem">🔐</div>
-    <div style="font-size:22px;font-weight:900;margin-bottom:4px">Панел за учители</div>
-    <div style="font-size:14px;color:var(--text3);margin-bottom:1.5rem">Влез с твоя акаунт</div>
-    <span class="back-link" onclick="showScreen('screen-home')" title="Обратно към началната страница">← Назад</span>
-    <div class="field-label">Потребителско ime</div>
-    <input class="text-input" id="admin-username-input" placeholder="Потребителско ime..." autocapitalize="none" onkeydown="if(event.key==='Enter')document.getElementById('admin-pass-input').focus()"/>
-    <div class="field-label">Парола</div>
-    <input class="text-input" id="admin-pass-input" type="password" placeholder="Парола..." onkeydown="if(event.key==='Enter')checkAdminPass()"/>
-    <div class="login-err" id="admin-pass-err">Грешно потребителско ime или парола</div>
-    <button class="btn-primary" onclick="checkAdminPass()">Влез в панела</button>
-  </div>
-</div>
-
-<!-- KID APP -->
-<div id="screen-app" class="screen">
-  <div class="app-header">
-    <div class="header-left">
-      <div class="h-avatar" id="h-av">🦁</div>
-      <div>
-        <div class="h-name" id="h-name">Ученик</div>
-        <div class="h-sub" id="h-sub">Добър ден!</div>
+<div id="screen-admin-login" class="screen flex-screen" style="background:#0d1117;min-height:100vh;align-items:center;justify-content:center;padding:2rem;">
+  <div style="width:100%;max-width:380px;">
+    <div style="text-align:center;margin-bottom:2rem;cursor:pointer" onclick="showScreen('screen-home')">
+      <div style="font-size:1.4rem;font-weight:700;color:#e6edf3;letter-spacing:-.5px;margin-bottom:.4rem;font-family:'Inter',sans-serif"><span style="color:#00d4aa">Ctrl</span><span style="color:#8b949e;font-weight:400">+</span>LearnBG</div>
+      <div style="font-size:.85rem;color:#8b949e;font-family:'Inter',sans-serif">Панел за учители</div>
+    </div>
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:2rem;font-family:'Inter',sans-serif;">
+      <div style="margin-bottom:1rem;">
+        <label style="font-size:.75rem;font-weight:500;color:#8b949e;display:block;margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.06em;">Потребителско ime</label>
+        <input class="text-input" id="admin-username-input" placeholder="Потребителско ime..." autocapitalize="none"
+          style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#e6edf3;border-radius:8px;font-family:'Inter',sans-serif;width:100%;"
+          onkeydown="if(event.key==='Enter')document.getElementById('admin-pass-input').focus()"/>
       </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <div class="h-logo">KMIT<span>★</span></div>
-      <button id="kid-admin-switch-btn" class="btn-sm" onclick="switchToAdminPanel()" style="display:none;background:var(--amber-light);color:#92400E;border-color:var(--amber)" title="Превключи към учителския панел">👑 Панел</button>
-      <button class="btn-sm" onclick="logout()" title="Излез от профила">Излез</button>
-    </div>
-  </div>
-  <div class="main">
-    <div class="points-banner">
-      <div>
-        <div class="pts-num" id="kid-pts">0 ⭐</div>
-        <div class="pts-label">точки</div>
+      <div style="margin-bottom:1.25rem;">
+        <label style="font-size:.75rem;font-weight:500;color:#8b949e;display:block;margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.06em;">Парола</label>
+        <input class="text-input" id="admin-pass-input" type="password" placeholder="Парола..."
+          style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#e6edf3;border-radius:8px;font-family:'Inter',sans-serif;width:100%;"
+          onkeydown="if(event.key==='Enter')checkAdminPass()"/>
       </div>
-      <div class="progress-wrap">
-        <div class="prog-label" id="prog-label">0 от 0 задачи</div>
-        <div class="prog-bar-bg"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
-      </div>
+      <div class="login-err" id="admin-pass-err" style="color:#ff6b6b;font-size:.8rem;margin-bottom:.75rem;display:none;font-family:'Inter',sans-serif;">Грешно потребителско ime или парола</div>
+      <button onclick="checkAdminPass()" style="width:100%;background:#00d4aa;color:#0d1117;font-size:.9rem;font-weight:600;padding:.8rem;border-radius:8px;border:none;cursor:pointer;font-family:'Inter',sans-serif;">
+        Влез в панела
+      </button>
     </div>
-    <div class="congrats" id="congrats">🎉 Браво! Изпълни всички задачи!</div>
-    <div class="badges-section" id="badges-section" style="display:none">
-      <div style="font-size:13px;font-weight:800;color:var(--text2)">🏅 Моите значки</div>
-      <div class="badges-grid" id="badges-grid"></div>
+    <div style="text-align:center;margin-top:1.25rem;">
+      <span onclick="showScreen('screen-home')" style="font-size:.78rem;color:#8b949e;cursor:pointer;font-family:'Inter',sans-serif;" onmouseover="this.style.color='#00d4aa'" onmouseout="this.style.color='#8b949e'">← Назад</span>
     </div>
-
-    <!-- kid nav tabs -->
-    <div class="subject-tabs" style="margin-bottom:0.5rem;background:var(--white);border-radius:99px;padding:4px;box-shadow:var(--shadow);display:inline-flex;width:100%">
-      <button class="stab active" id="kid-tab-tasks" onclick="switchKidTab('tasks')" style="flex:1;text-align:center">📝 Задачи</button>
-      <button class="stab" id="kid-tab-calendar" onclick="switchKidTab('calendar')" style="flex:1;text-align:center">📅 Календар</button>
-      <button class="stab" id="kid-tab-progress" onclick="switchKidTab('progress')" style="flex:1;text-align:center">📊 Прогрес</button>
-      <button class="stab" id="kid-tab-notes" onclick="switchKidTab('notes')" style="flex:1;text-align:center">📝 Бележник</button>
-      <button class="stab" id="kid-tab-library" onclick="switchKidTab('library')" style="flex:1;text-align:center">📚 Библиотека</button>
-      <button class="stab" id="kid-tab-grades" onclick="switchKidTab('grades')" style="flex:1;text-align:center">📋 Оценки</button>
-    </div>
-
-    <!-- tasks view -->
-    <div id="kid-view-tasks">
-      <!-- subject filter -->
-      <div class="subject-tabs" id="subject-tabs"></div>
-
-    <div class="sec-head" id="sec-active-head">Активни задачи</div>
-    <div id="active-list"></div>
-    <div class="sec-head" id="sec-done" style="display:none">Изпълнени ✓</div>
-    <div id="done-list"></div>
-
-
-    </div><!-- end kid-view-tasks -->
-
-    <!-- calendar view -->
-    <div id="kid-view-calendar" style="display:none">
-      <div class="calendar-wrap">
-        <div class="cal-header">
-          <button class="cal-nav-btn" onclick="calPrev()">‹</button>
-          <div class="cal-title" id="cal-title">Юни 2026</div>
-          <button class="cal-nav-btn" onclick="calNext()">›</button>
-        </div>
-        <div class="cal-grid" id="cal-grid"></div>
-        <div class="cal-legend">
-          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#E0F2FE"></div>КМИТ</div>
-          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#F0FDF4"></div>ИТ</div>
-          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--purple-light)"></div>Информатика</div>
-          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--red-light)"></div>Просрочена</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- progress view -->
-    <div id="kid-view-progress" style="display:none">
-      <div class="progress-chart-wrap">
-        <div class="progress-chart-title">📈 Точки по седмица</div>
-        <div class="chart-bars" id="progress-chart-bars"></div>
-        <div class="progress-stats-grid" id="progress-stats-grid"></div>
-      </div>
-    </div>
-
-    <!-- notes view -->
-    <div id="kid-view-notes" style="display:none">
-      <div id="notes-list-view">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-          <div style="font-size:14px;font-weight:800;color:var(--text)">📝 Моите бележки</div>
-          <button class="btn-green" onclick="openNewNote()" style="font-size:13px;padding:7px 14px">+ Нова бележка</button>
-        </div>
-        <div class="notes-grid" id="notes-grid"></div>
-        <div id="notes-empty" class="empty" style="display:none">📭 Нямаш бележки все още. Натисни "+ Нова бележка"!</div>
-      </div>
-      <div id="notes-editor-view" style="display:none">
-        <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.25rem;">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
-            <button class="lesson-back-btn" onclick="closeNoteEditor()" title="Назад към бележките">←</button>
-            <div style="font-size:14px;font-weight:800">📝 Редактирай бележка</div>
-          </div>
-          <input id="note-edit-title" class="text-input" placeholder="Заглавие..." maxlength="60" style="margin-bottom:8px"/>
-          <div class="note-colors" id="note-color-picker">
-            <div class="note-color-btn selected" data-color="#ffffff" onclick="pickNoteColor(this,'#ffffff')" style="background:#ffffff;border-color:#ccc" title="Бяло"></div>
-            <div class="note-color-btn" data-color="#E1F5EE" onclick="pickNoteColor(this,'#E1F5EE')" style="background:#E1F5EE" title="Зелено"></div>
-            <div class="note-color-btn" data-color="#EFF6FF" onclick="pickNoteColor(this,'#EFF6FF')" style="background:#EFF6FF" title="Синьо"></div>
-            <div class="note-color-btn" data-color="#FFFBEB" onclick="pickNoteColor(this,'#FFFBEB')" style="background:#FFFBEB" title="Жълто"></div>
-            <div class="note-color-btn" data-color="#FEF2F2" onclick="pickNoteColor(this,'#FEF2F2')" style="background:#FEF2F2" title="Червено"></div>
-            <div class="note-color-btn" data-color="#F5F3FF" onclick="pickNoteColor(this,'#F5F3FF')" style="background:#F5F3FF" title="Лилаво"></div>
-          </div>
-          <textarea id="note-edit-text" style="width:100%;min-height:250px;padding:10px 14px;font-size:14px;font-family:'Nunito Sans',sans-serif;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);color:var(--text);resize:vertical;line-height:1.7" placeholder="Пиши тук..."></textarea>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
-            <span id="note-save-label" style="font-size:12px;color:var(--text3)"></span>
-            <div style="display:flex;gap:8px">
-              <button class="btn-red" onclick="deleteCurrentNote()" style="font-size:13px">🗑️ Изтрий</button>
-              <button class="btn-green" onclick="saveCurrentNote()" style="font-size:13px">💾 Запази</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- library view -->
-    <div id="kid-view-library" style="display:none">
-      <div id="lib-list-view">
-        <div class="lib-subject-tabs" id="lib-subject-tabs"></div>
-        <div id="lib-topics-list"></div>
-      </div>
-      <div id="lib-reader-view" style="display:none"></div>
-    </div>
-
-    <!-- grades view -->
-    <div id="kid-view-grades" style="display:none">
-      <div class="grade-avg" id="grade-avg-banner">
-        <div>
-          <div class="grade-avg-num" id="grade-avg-num">—</div>
-          <div class="grade-avg-label">Среден успех</div>
-        </div>
-        <div style="flex:1;padding-left:1rem;border-left:1px solid var(--gray-200)">
-          <div style="font-size:13px;color:var(--text2)" id="grade-count-label">Няма оценки все още</div>
-        </div>
-      </div>
-      <div class="grades-list" id="grades-list-kid"></div>
-      <div class="empty" id="grades-empty" style="display:none">📭 Нямаш оценки все още</div>
-    </div>
-
-    <!-- leaderboard -->
-    <div class="sec-head" style="margin-top:2rem">🏆 Класация</div>
-    <div class="leaderboard" id="leaderboard"></div>
-
-    <!-- messages -->
-    <div class="sec-head" style="margin-top:2rem" id="sec-messages-head">
-      📣 Съобщения <span id="unread-dot" style="display:none" class="notif-dot"></span>
-    </div>
-    <div id="kid-messages-list"></div>
   </div>
 </div>
 
@@ -724,7 +619,7 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
 <div id="screen-admin" class="screen">
   <div class="admin-header">
     <div style="display:flex;align-items:center;gap:10px">
-      <div class="admin-title">🏫 KMIT — Панел</div>
+      <div class="admin-title" onclick="showScreen('screen-home')" style="cursor:pointer;font-family:'Inter',sans-serif"><span style="color:#00d4aa">Ctrl</span><span style="color:#8b949e;font-weight:400">+</span>LearnBG — Панел</div>
       <span id="admin-role-badge" style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--amber-light);color:#92400E;display:none"></span>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
@@ -1320,8 +1215,12 @@ function isOverdue(task) {
 
 // ── SCREENS ──
 window.showScreen = id => {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.screen').forEach(s => {
+    s.style.display = '';
+    s.classList.remove('active');
+  });
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
 };
 
 function greeting() {
@@ -2422,6 +2321,15 @@ window.switchToAdminPanel = () => {
   initQuestionBuilder();
 };
 
+window.showLoginChoice = () => {
+  document.getElementById('login-choice-overlay').style.display = 'block';
+  document.getElementById('login-choice-modal').style.display = 'block';
+};
+window.hideLoginChoice = () => {
+  document.getElementById('login-choice-overlay').style.display = 'none';
+  document.getElementById('login-choice-modal').style.display = 'none';
+};
+
 // ── ARCHIVE & COPY ──
 window.archiveTask = async (id, isArchived) => {
   await update(ref(db,`tasks/${id}`), { archived: !isArchived });
@@ -2559,7 +2467,7 @@ window.exportCSV = () => {
   });
 
   if (rows.length === 1) { alert('Няма данни за експорт'); return; }
-  downloadCSV(`KMIT_резултати_${new Date().toLocaleDateString('bg-BG').replace(/\./g,'-')}.csv`, rows);
+  downloadCSV(`CtrlLearnBG_резултати_${new Date().toLocaleDateString('bg-BG').replace(/\./g,'-')}.csv`, rows);
 };
 
 window.exportSummaryCSV = () => {
@@ -2621,7 +2529,7 @@ window.exportSummaryCSV = () => {
   });
 
   if (rows.length === 1) { alert('Няма данни за експорт'); return; }
-  downloadCSV(`KMIT_обобщение_${new Date().toLocaleDateString('bg-BG').replace(/\./g,'-')}.csv`, rows);
+  downloadCSV(`CtrlLearnBG_обобщение_${new Date().toLocaleDateString('bg-BG').replace(/\./g,'-')}.csv`, rows);
 };
 
 
