@@ -849,6 +849,7 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
         </div>
         <div class="form-row">
           <input class="form-input" id="nl-topic" placeholder="Тема (напр. Интернет, Word...)..." maxlength="60"/>
+          <input class="form-input" id="nl-points" type="number" placeholder="Точки" min="0" max="100" value="5" style="max-width:100px"/>
           <select class="form-select" id="nl-grade">
             <option value="5">5 клас</option>
             <option value="6">6 клас</option>
@@ -1021,6 +1022,7 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
     </div>
     <div class="form-row" style="margin-bottom:8px">
       <input class="form-input" id="el-topic" placeholder="Тема..." maxlength="60"/>
+      <input class="form-input" id="el-points" type="number" placeholder="Точки" min="0" max="100" style="max-width:90px"/>
       <select class="form-select" id="el-grade">
         <option value="5">5 клас</option><option value="6">6 клас</option>
         <option value="7">7 клас</option><option value="8">8 клас</option>
@@ -2075,6 +2077,12 @@ const ALL_BADGES = [
   // класация
   { id:'top1',     icon:'🏆',  name:'#1',         desc:'Заеми 1-во място в класацията', check:(s)=>s.rank===1 },
   { id:'top3',     icon:'🎖️', name:'Топ 3',       desc:'Влез в топ 3 на класацията',   check:(s)=>s.rank<=3 },
+  // lesson badges
+  { id:'read1',    icon:'📖',  name:'Читател',     desc:'Прочети 1 урок',               check:(s)=>s.readLessons>=1 },
+  { id:'read5',    icon:'📚',  name:'Книжник',     desc:'Прочети 5 урока',              check:(s)=>s.readLessons>=5 },
+  { id:'read10',   icon:'🎓',  name:'Студент',     desc:'Прочети 10 урока',             check:(s)=>s.readLessons>=10 },
+  { id:'read25',   icon:'🏛️', name:'Учен',        desc:'Прочети 25 урока',             check:(s)=>s.readLessons>=25 },
+  { id:'lessonperfect', icon:'💡', name:'Отличник', desc:'Вземи 100% на тест в урок',  check:(s)=>s.perfectLessonQuiz>=1 },
 ];
 
 let shownBadgePopups = [];
@@ -2108,7 +2116,19 @@ function computeStudentStats(tasks, cid, children) {
   classmates.sort((a,b)=>(b[1].points||0)-(a[1].points||0));
   const rank = classmates.findIndex(([k])=>k===cid)+1 || 999;
 
-  return { doneTasks, points, perfectTests, streak, rank };
+  // read lessons
+  const readLessons = getReadLessonIds().length;
+
+  // perfect lesson quiz
+  let perfectLessonQuiz = 0;
+  Object.entries(allLessonsCache).forEach(([lid,lesson]) => {
+    if (!lesson.quiz?.length || !lesson.quizResults?.[cid]) return;
+    const resp = lesson.quizResults[cid];
+    const correct = lesson.quiz.filter((q,i) => resp[`q${i}`]===q.correct).length;
+    if (correct === lesson.quiz.length) perfectLessonQuiz++;
+  });
+
+  return { doneTasks, points, perfectTests, streak, rank, readLessons, perfectLessonQuiz };
 }
 
 async function checkAndAwardBadges(tasks, cid) {
@@ -2662,6 +2682,7 @@ window.saveLesson = async () => {
     title, topic,
     subject: document.getElementById('nl-subject').value,
     grade: document.getElementById('nl-grade').value,
+    points: parseInt(document.getElementById('nl-points').value)||5,
     blocks, quiz,
     createdAt: Date.now()
   };
@@ -2702,7 +2723,7 @@ function renderAdminLessons() {
       <div class="lesson-topic-title">${subjectTag(g.subject)} ${g.grade?g.grade+' клас · ':''}${g.topic}</div>
       ${g.lessons.map(([k,l]) => `<div class="lesson-list-item">
         <div class="lesson-list-title">📖 ${l.title}</div>
-        <span style="font-size:11px;color:var(--text3)">${l.grade||''}кл · ${l.blocks?.length||0} блока · ${l.quiz?.length||0} въпроса</span>
+        <span style="font-size:11px;color:var(--text3)">${l.grade||''}кл · ${l.blocks?.length||0} блока · ${l.quiz?.length||0} въпроса · +${l.points||5}⭐</span>
         <button class="btn-edit" onclick="openEditLesson('${k}')" title="Редактирай урока">✏️</button>
         <button class="btn-red" onclick="deleteLesson('${k}')" title="Изтрий урока">🗑️</button>
       </div>`).join('')}
@@ -2798,7 +2819,7 @@ function renderLibraryList() {
               <div class="lesson-icon">${isRead?'✅':'📖'}</div>
               <div class="lesson-info">
                 <div class="lesson-title">${l.title}</div>
-                <div class="lesson-meta">${l.blocks?.length||0} части${l.quiz?.length?' · 🧪 '+l.quiz.length+' въпроса':''}</div>
+                <div class="lesson-meta">${l.blocks?.length||0} части${l.quiz?.length?' · 🧪 '+l.quiz.length+' въпроса':''}${l.points?' · +'+l.points+'⭐':''}</div>
               </div>
               ${isRead?'<span class="lesson-read-badge">✓ Прочетен</span>':''}
             </div>`;
@@ -2839,6 +2860,18 @@ function markLessonRead(id) {
   if (!ids.includes(id)) {
     ids.push(id);
     try { localStorage.setItem(`kmit_read_lessons_${currentUser?.childId}`, JSON.stringify(ids)); } catch(e){}
+    // award points for reading
+    const lesson = allLessonsCache[id];
+    if (lesson?.points && currentUser?.childId) {
+      const pts = parseInt(lesson.points)||5;
+      get(ref(db,`children/${currentUser.childId}`)).then(snap => {
+        if (!snap.exists()) return;
+        const current = snap.val().points || 0;
+        update(ref(db,`children/${currentUser.childId}`), { points: current + pts });
+      });
+      // save to lessonPoints for tracking
+      update(ref(db,`lessonPoints/${currentUser.childId}/${id}`), { points: pts, readAt: Date.now() });
+    }
   }
 }
 
@@ -3239,6 +3272,7 @@ window.openEditLesson = async (id) => {
   document.getElementById('el-subject').value = l.subject||'kmit';
   document.getElementById('el-topic').value = l.topic||'';
   document.getElementById('el-grade').value = l.grade||'5';
+  document.getElementById('el-points').value = l.points||5;
   // build blocks
   elBlockCount=0;
   document.getElementById('el-blocks-editor').innerHTML='';
@@ -3315,6 +3349,7 @@ window.saveEditLesson = async () => {
     title, topic,
     subject:document.getElementById('el-subject').value,
     grade:document.getElementById('el-grade').value,
+    points:parseInt(document.getElementById('el-points').value)||5,
     blocks, quiz, updatedAt:Date.now()
   });
   closeModal('edit-lesson-modal');
