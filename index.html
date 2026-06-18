@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>KMIT Платформа</title>
+<title>Ctrl+LearnBG Платформа</title>
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#1D9E75"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<meta name="apple-mobile-web-app-title" content="KMIT"/>
+<meta name="apple-mobile-web-app-title" content="Ctrl+LearnBG"/>
 <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3eb.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -463,7 +463,7 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
 <div id="screen-home" class="screen active">
   <div class="home-card" style="margin:auto">
     <div class="home-badge">🎓 Учебна платформа</div>
-    <div class="home-logo">KMIT<span>★</span></div>
+    <div class="home-logo">CTRL+LearnBG <span>★</span></div>
     <div class="home-tagline">Всичко за учене на едно място</div>
     <div class="home-desc">Задачи, тестове, материали и проследяване на напредъка.</div>
     <div class="home-features">
@@ -480,14 +480,14 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
 <!-- STUDENT LOGIN -->
 <div id="screen-login" class="screen">
   <div class="login-card" style="margin:auto">
-    <div class="login-logo">KMIT<span>★</span></div>
-    <div class="login-sub">Влез с твоето потребителско ime и парола</div>
+    <div class="login-logo">CTRL+LearnBG<span>★</span></div>
+    <div class="login-sub">Влез с твоето потребителско име и парола</div>
     <span class="back-link" onclick="showScreen('screen-home')" title="Обратно към началната страница">← Назад</span>
-    <div class="field-label">Потребителско ime</div>
-    <input class="text-input" id="login-username" placeholder="Потребителско ime..." autocomplete="username" autocapitalize="none" onkeydown="if(event.key==='Enter')document.getElementById('login-password').focus()"/>
+    <div class="field-label">Потребителско име</div>
+    <input class="text-input" id="login-username" placeholder="Потребителско име..." autocomplete="username" autocapitalize="none" onkeydown="if(event.key==='Enter')document.getElementById('login-password').focus()"/>
     <div class="field-label">Парола</div>
     <input class="text-input" id="login-password" type="password" placeholder="Парола..." autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
-    <div class="login-err" id="login-err">Грешно потребителско ime или парола</div>
+    <div class="login-err" id="login-err">Грешно потребителско име или парола</div>
     <button class="btn-primary" onclick="doLogin()">Влез</button>
   </div>
 </div>
@@ -499,8 +499,8 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
     <div style="font-size:22px;font-weight:900;margin-bottom:4px">Панел за учители</div>
     <div style="font-size:14px;color:var(--text3);margin-bottom:1.5rem">Влез с твоя акаунт</div>
     <span class="back-link" onclick="showScreen('screen-home')" title="Обратно към началната страница">← Назад</span>
-    <div class="field-label">Потребителско ime</div>
-    <input class="text-input" id="admin-username-input" placeholder="Потребителско ime..." autocapitalize="none" onkeydown="if(event.key==='Enter')document.getElementById('admin-pass-input').focus()"/>
+    <div class="field-label">Потребителско име</div>
+    <input class="text-input" id="admin-username-input" placeholder="Потребителско име..." autocapitalize="none" onkeydown="if(event.key==='Enter')document.getElementById('admin-pass-input').focus()"/>
     <div class="field-label">Парола</div>
     <input class="text-input" id="admin-pass-input" type="password" placeholder="Парола..." onkeydown="if(event.key==='Enter')checkAdminPass()"/>
     <div class="login-err" id="admin-pass-err">Грешно потребителско ime или парола</div>
@@ -668,7 +668,7 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
 <div id="screen-admin" class="screen">
   <div class="admin-header">
     <div style="display:flex;align-items:center;gap:10px">
-      <div class="admin-title">🏫 KMIT — Панел</div>
+      <div class="admin-title">🏫 Ctrl_LearnBG — Панел</div>
       <span id="admin-role-badge" style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--amber-light);color:#92400E;display:none"></span>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
@@ -922,8 +922,8 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
       <div class="card-form">
         <h3>Добави администратор</h3>
         <div class="form-row">
-          <input class="form-input" id="na-name" placeholder="Пълно ime..." maxlength="40"/>
-          <input class="form-input" id="na-username" placeholder="Потр. ime..." maxlength="30" autocapitalize="none"/>
+          <input class="form-input" id="na-name" placeholder="Пълно име..." maxlength="40"/>
+          <input class="form-input" id="na-username" placeholder="Потр. име..." maxlength="30" autocapitalize="none"/>
         </div>
         <div class="form-row">
           <input class="form-input" id="na-password" placeholder="Парола..." maxlength="50"/>
@@ -974,13 +974,13 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
           <input class="form-input" id="nc-password" placeholder="Парола..." maxlength="30"/>
           <button class="btn-green" onclick="addChild()" title="Добави ученика в системата">+ Добави</button>
         </div>
-        <div class="hint">Потр. ime — уникално, без интервали</div>
+        <div class="hint">Потр. име — уникално, без интервали</div>
       </div>
 
       <!-- CSV IMPORT -->
       <div class="card-form">
         <h3>📥 Масов импорт от CSV</h3>
-        <div class="hint" style="margin-bottom:8px">Формат: <code>Пълно Ime,клас,username,парола</code> — по един ред</div>
+        <div class="hint" style="margin-bottom:8px">Формат: <code>Пълно име,клас,username,парола</code> — по един ред</div>
         <textarea class="csv-area" id="csv-input" placeholder="Иван Иванов,7А,ivan123,pass123&#10;Мария Петрова,8Б,maria.p,pass456"></textarea>
         <div id="csv-preview" class="import-preview" style="display:none"></div>
         <div style="display:flex;gap:8px;margin-top:8px">
