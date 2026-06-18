@@ -1892,7 +1892,10 @@ window.setSubjectFilter=s=>{
 
 function isTaskDone(t,cid){
   if(t.type==='test'||t.type==='question')return !!(t.responses?.[cid]);
-  return !!t.done;
+  if(t.childDone?.[cid]) return true;
+  if(t.childFiles?.[cid]) return true;
+  if(t.done && !cid) return true; // legacy
+  return false;
 }
 
 function renderKidTasks(tasks,cid,subjectFilter){
@@ -1951,7 +1954,11 @@ function renderKidTasks(tasks,cid,subjectFilter){
   document.getElementById('done-list').innerHTML=done.map(card).join('');
 }
 
-window.toggleTask=(id,val)=>update(ref(db,`tasks/${id}`),{done:val});
+window.toggleTask=(id,val)=>{
+  const cid = currentUser?.childId;
+  if(!cid) return;
+  update(ref(db,`tasks/${id}/childDone`),{[cid]:val});
+};
 window.selectOpt=(el,tid,qi)=>{document.querySelectorAll(`[data-qid="${tid}-${qi}"]`).forEach(o=>o.classList.remove('selected'));el.classList.add('selected');};
 window.submitTest=async tid=>{
   const t=allTasksCache[tid];if(!t||!t.questions)return;
