@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>KMIT Платформа</title>
+<title>Ctrl+LearnBG</title>
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#1D9E75"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<meta name="apple-mobile-web-app-title" content="KMIT"/>
+<meta name="apple-mobile-web-app-title" content="Ctrl+LearnBG"/>
 <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3eb.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -463,7 +463,7 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
 <div id="screen-home" class="screen active">
   <div class="home-card" style="margin:auto">
     <div class="home-badge">🎓 Учебна платформа</div>
-    <div class="home-logo">KMIT<span>★</span></div>
+    <div class="home-logo"><span style="color:var(--green)">Ctrl</span><span style="color:var(--text3);font-weight:400">+</span>LearnBG</div>
     <div class="home-tagline">Всичко за учене на едно място</div>
     <div class="home-desc">Задачи, тестове, материали и проследяване на напредъка.</div>
     <div class="home-features">
@@ -480,7 +480,7 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
 <!-- STUDENT LOGIN -->
 <div id="screen-login" class="screen">
   <div class="login-card" style="margin:auto">
-    <div class="login-logo">KMIT<span>★</span></div>
+    <div class="login-logo" onclick="showScreen('screen-home')" style="cursor:pointer"><span style="color:#00d4aa">Ctrl</span>+LearnBG</div>
     <div class="login-sub">Влез с твоето потребителско ime и парола</div>
     <span class="back-link" onclick="showScreen('screen-home')" title="Обратно към началната страница">← Назад</span>
     <div class="field-label">Потребителско ime</div>
@@ -519,7 +519,7 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
-      <div class="h-logo">KMIT<span>★</span></div>
+      <div class="h-logo" onclick="showScreen('screen-home')" style="cursor:pointer;font-size:13px"><span style="color:var(--green)">Ctrl</span>+Learn</div>
       <button id="kid-admin-switch-btn" class="btn-sm" onclick="switchToAdminPanel()" style="display:none;background:var(--amber-light);color:#92400E;border-color:var(--amber)" title="Превключи към учителския панел">👑 Панел</button>
       <button class="btn-sm" onclick="logout()" title="Излез от профила">Излез</button>
     </div>
@@ -668,7 +668,7 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
 <div id="screen-admin" class="screen">
   <div class="admin-header">
     <div style="display:flex;align-items:center;gap:10px">
-      <div class="admin-title">🏫 KMIT — Панел</div>
+      <div class="admin-title">Ctrl+LearnBG — Панел</div>
       <span id="admin-role-badge" style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--amber-light);color:#92400E;display:none"></span>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
@@ -1637,9 +1637,8 @@ function renderResults(){
       const isDone = (task.type==='test'||task.type==='question') ? !!(task.responses?.[cid]) : !!task.done;
       const hasFiles = !!(task.childFiles?.[cid]);
       const hasResponse = !!(task.responses?.[cid]);
-
-      // show if done OR has files OR has response
-      if(!isDone && !hasFiles && !hasResponse) return;
+      const existingGradeCheck = allGradesCache?.[cid]?.[tid];
+      // show always so teacher can grade
 
       const cname=`${child.avatar||''} ${child.name} (${child.class||''})`;
       let html=`<div class="result-card">
@@ -2503,7 +2502,7 @@ window.exportCSV = () => {
   });
 
   if (rows.length === 1) { alert('Няма данни за експорт'); return; }
-  downloadCSV(`KMIT_резултати_${new Date().toLocaleDateString('bg-BG').replace(/\./g,'-')}.csv`, rows);
+  downloadCSV(`CtrlLearnBG_резултати_${new Date().toLocaleDateString('bg-BG').replace(/\./g,'-')}.csv`, rows);
 };
 
 window.exportSummaryCSV = () => {
@@ -2565,7 +2564,7 @@ window.exportSummaryCSV = () => {
   });
 
   if (rows.length === 1) { alert('Няма данни за експорт'); return; }
-  downloadCSV(`KMIT_обобщение_${new Date().toLocaleDateString('bg-BG').replace(/\./g,'-')}.csv`, rows);
+  downloadCSV(`CtrlLearnBG_обобщение_${new Date().toLocaleDateString('bg-BG').replace(/\./g,'-')}.csv`, rows);
 };
 
 
