@@ -519,7 +519,7 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
-      <div class="h-logo">KMIT<span>★</span></div>
+      <div class="h-logo" onclick="showScreen('screen-home')" style="cursor:pointer;font-size:13px"><span style="color:var(--green)">Ctrl</span>+Learn</div>
       <button id="kid-admin-switch-btn" class="btn-sm" onclick="switchToAdminPanel()" style="display:none;background:var(--amber-light);color:#92400E;border-color:var(--amber)" title="Превключи към учителския панел">👑 Панел</button>
       <button class="btn-sm" onclick="logout()" title="Излез от профила">Излез</button>
     </div>
@@ -680,7 +680,7 @@ h1,h2,h3,h4,.logo{font-family:'Nunito',Arial,sans-serif;}
     <div class="admin-tabs">
       <button class="tab active" onclick="switchTab('tab-tasks',this)" title="Управлявай задачите">Задачи</button>
       <button class="tab" onclick="switchTab('tab-stats',this)" title="Виж статистики за изпълнение">Статистики</button>
-      <button class="tab" onclick="switchTab('tab-results',this)" title="Виж отговорите и резултатите на учениците">Резултати</button>
+      <button class="tab" onclick="switchTab('tab-results',this);listenGrades()" title="Виж отговорите и резултатите на учениците">Резултати</button>
       <button class="tab" onclick="switchTab('tab-messages-admin',this)" title="Изпрати съобщение до клас или ученик">Съобщения</button>
       <button class="tab" onclick="switchTab('tab-library-admin',this)" title="Управлявай учебната библиотека">📚 Уроци</button>
       <button class="tab" onclick="switchTab('tab-children',this)" title="Управлявай профилите на учениците">Ученици</button>
@@ -1602,10 +1602,18 @@ function renderStats(){
       return !!t.done;
     }).length;
     const pct=matching.length?Math.round(doneCount/matching.length*100):0;
-    return `<div class="task-stat-row">
-      <div class="task-stat-name">${typeTag(t.type)} ${t.title}</div>
-      <div class="task-stat-bar-bg"><div class="task-stat-bar-fill" style="width:${pct}%"></div></div>
-      <div class="task-stat-pct">${pct}%</div>
+    const doneList=matching.filter(([cid,c])=>isTaskDone(t,cid));
+    const notDoneList=matching.filter(([cid,c])=>!isTaskDone(t,cid));
+    const doneNames=doneList.map(([cid,c])=>`<span style="background:var(--green-light);color:var(--green-dark);padding:1px 6px;border-radius:4px;font-size:11px">${c.avatar||''} ${c.name}</span>`).join(' ');
+    const notDoneNames=notDoneList.map(([cid,c])=>`<span style="background:var(--red-light);color:var(--red);padding:1px 6px;border-radius:4px;font-size:11px">${c.avatar||''} ${c.name}</span>`).join(' ');
+    return `<div class="task-stat-row" style="flex-direction:column;align-items:flex-start;gap:5px;padding:10px 0">
+      <div style="display:flex;align-items:center;gap:8px;width:100%">
+        <div class="task-stat-name">${typeTag(t.type)} ${t.title}</div>
+        <div class="task-stat-bar-bg" style="flex:1"><div class="task-stat-bar-fill" style="width:${pct}%"></div></div>
+        <div class="task-stat-pct">${doneCount}/${matching.length} (${pct}%)</div>
+      </div>
+      ${doneList.length?`<div style="display:flex;flex-wrap:wrap;gap:3px"><span style="font-size:11px;color:var(--text3);margin-right:2px">✓ Изпълнили:</span>${doneNames}</div>`:''}
+      ${notDoneList.length?`<div style="display:flex;flex-wrap:wrap;gap:3px"><span style="font-size:11px;color:var(--text3);margin-right:2px">✗ Не са изпълнили:</span>${notDoneNames}</div>`:''}
     </div>`;
   }).join('');
 }
@@ -2482,7 +2490,7 @@ window.exportCSV = () => {
   });
 
   if (rows.length === 1) { alert('Няма данни за експорт'); return; }
-  downloadCSV(`KMIT_резултати_${new Date().toLocaleDateString('bg-BG').replace(/\./g,'-')}.csv`, rows);
+  downloadCSV(`CtrlLearnBG_резултати_${new Date().toLocaleDateString('bg-BG').replace(/\./g,'-')}.csv`, rows);
 };
 
 window.exportSummaryCSV = () => {
@@ -2544,7 +2552,7 @@ window.exportSummaryCSV = () => {
   });
 
   if (rows.length === 1) { alert('Няма данни за експорт'); return; }
-  downloadCSV(`KMIT_обобщение_${new Date().toLocaleDateString('bg-BG').replace(/\./g,'-')}.csv`, rows);
+  downloadCSV(`CtrlLearnBG_обобщение_${new Date().toLocaleDateString('bg-BG').replace(/\./g,'-')}.csv`, rows);
 };
 
 
@@ -2839,6 +2847,22 @@ function markLessonRead(id) {
   if (!ids.includes(id)) {
     ids.push(id);
     try { localStorage.setItem(`kmit_read_lessons_${currentUser?.childId}`, JSON.stringify(ids)); } catch(e){}
+    // award points
+    const lesson = allLessonsCache[id];
+    const cid = currentUser?.childId;
+    if (cid) {
+      const pts = parseInt(lesson?.points)||5;
+      get(ref(db,`children/${cid}`)).then(snap => {
+        if (!snap.exists()) return;
+        const current = snap.val().points || 0;
+        const newPts = current + pts;
+        update(ref(db,`children/${cid}`), { points: newPts });
+        const el = document.getElementById('kid-pts');
+        if (el) el.textContent = newPts + ' ⭐';
+      });
+      update(ref(db,`lessonPoints/${cid}/${id}`), { points: pts, readAt: Date.now() });
+      setTimeout(() => checkAndAwardBadges(allTasksCache, cid).catch(()=>{}), 600);
+    }
   }
 }
 
